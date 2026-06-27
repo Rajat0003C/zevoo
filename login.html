@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkedWith Login</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+  --paper:#F4F1EC;
+  --primary:#2F4858;
+  --primary-dark:#1C2E38;
+  --accent:#B98655;
+  --line:#E7E3DC;
+  --ink:#22262A;
+  --ink-soft:#6E7378;
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Inter',sans-serif;
+}
+
+body{
+background:#E9E5DD;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+}
+
+.phone-frame{
+width:100%;
+max-width:430px;
+background:var(--paper);
+padding:25px;
+min-height:100vh;
+}
+
+.logo{
+text-align:center;
+margin-top:35px;
+margin-bottom:25px;
+}
+
+.logo h1{
+font-family:'Lora',serif;
+font-size:2rem;
+color:var(--primary);
+}
+
+.logo p{
+color:var(--ink-soft);
+}
+
+.card{
+background:#fff;
+padding:25px;
+border-radius:18px;
+border:1px solid var(--line);
+}
+
+.label{
+display:block;
+font-weight:600;
+margin-bottom:8px;
+}
+
+.input-group{
+display:flex;
+border:1px solid var(--line);
+border-radius:10px;
+overflow:hidden;
+margin-bottom:15px;
+background:white;
+}
+
+.prefix{
+padding:14px;
+background:#f7f7f7;
+border-right:1px solid var(--line);
+font-weight:600;
+color:var(--primary);
+}
+
+.input{
+flex:1;
+border:none;
+outline:none;
+padding:14px;
+}
+
+.password-wrap{
+position:relative;
+margin-bottom:15px;
+}
+
+.password-wrap input{
+width:100%;
+padding:14px;
+padding-right:50px;
+border:1px solid var(--line);
+border-radius:10px;
+outline:none;
+}
+
+.eye{
+position:absolute;
+right:15px;
+top:50%;
+transform:translateY(-50%);
+cursor:pointer;
+}
+
+.btn{
+width:100%;
+padding:14px;
+background:var(--primary);
+color:white;
+border:none;
+border-radius:10px;
+font-weight:700;
+cursor:pointer;
+}
+
+.btn:hover{
+background:var(--primary-dark);
+}
+
+.links{
+text-align:center;
+margin-top:12px;
+}
+
+.links a{
+display:block;
+margin-top:10px;
+text-decoration:none;
+font-weight:600;
+color:var(--accent);
+}
+
+.signup{
+margin-top:20px;
+text-align:center;
+}
+
+.signup a{
+color:var(--primary);
+font-weight:700;
+text-decoration:none;
+}
+
+/* popup */
+.popup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.5);
+display:none;
+justify-content:center;
+align-items:center;
+padding:20px;
+}
+
+.popup-box{
+background:white;
+padding:25px;
+border-radius:18px;
+text-align:center;
+width:100%;
+max-width:350px;
+}
+
+.popup-box h2{
+color:var(--primary);
+margin-bottom:10px;
+}
+
+.popup-box p{
+color:var(--ink-soft);
+margin-bottom:20px;
+}
+
+.popup-box a{
+display:block;
+padding:12px;
+border-radius:10px;
+text-decoration:none;
+margin-top:10px;
+}
+
+.primary-btn{
+background:var(--primary);
+color:white;
+}
+
+.skip-btn{
+border:1px solid var(--line);
+color:var(--ink);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="phone-frame">
+
+<div class="logo">
+<h1>WorkedWith</h1>
+<p>Find Shops. Find Workers.</p>
+</div>
+
+<div class="card">
+
+<label class="label">Email or Phone Number</label>
+
+<div class="input-group">
+<span class="prefix">+91</span>
+<input type="text" id="loginInput" class="input" placeholder="Email or Phone">
+</div>
+
+<label class="label">Password</label>
+
+<div class="password-wrap">
+<input type="password" id="password" placeholder="Enter password">
+<span class="eye" onclick="togglePass()">👁</span>
+</div>
+
+<button class="btn" id="loginBtn">Login</button>
+
+<div class="links">
+<a href="forgot-password.html">Forgot Password?</a>
+</div>
+
+<div class="signup">
+Don't have account?
+<a href="signup.html">Sign Up</a>
+</div>
+
+</div>
+
+</div>
+
+<!-- POPUP -->
+<div class="popup" id="popup">
+
+<div class="popup-box">
+
+<h2>Complete Profile</h2>
+<p>You can complete your profile later.</p>
+
+<a href="profile.html" class="primary-btn">Set Profile</a>
+<a href="#" class="skip-btn" id="skipBtn">Skip</a>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAQpIa5IIcK4NBn0p0zgE2Q-0Xdv6Hu4BQ",
+  authDomain: "workedwith-91d94.firebaseapp.com",
+  projectId: "workedwith-91d94",
+  storageBucket: "workedwith-91d94.firebasestorage.app",
+  messagingSenderId: "793805242005",
+  appId: "1:793805242005:web:45a49b9547bfccad74a59c"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let userRole = "";
+
+function togglePass(){
+ const p = document.getElementById("password");
+ p.type = p.type === "password" ? "text" : "password";
+}
+
+window.togglePass = togglePass;
+
+// load last email
+document.getElementById("loginInput").value =
+localStorage.getItem("lastEmail") || "";
+
+document.getElementById("loginBtn").addEventListener("click", async () => {
+
+try {
+
+let input = document.getElementById("loginInput").value.trim();
+let password = document.getElementById("password").value;
+
+if (!input || !password) {
+alert("Fill all fields");
+return;
+}
+
+let email = input;
+
+// IF PHONE → FIND EMAIL
+if (!input.includes("@")) {
+
+const q = query(collection(db, "users"), where("phone", "==", input));
+const snap = await getDocs(q);
+
+if (snap.empty) {
+alert("Phone not found");
+return;
+}
+
+email = snap.docs[0].data().email;
+}
+
+const userCred = await signInWithEmailAndPassword(auth, email, password);
+
+localStorage.setItem("lastEmail", email);
+
+const userDoc = await getDoc(doc(db, "users", userCred.user.uid));
+const data = userDoc.data();
+
+userRole = data.role;
+
+if (!data.profileCompleted) {
+document.getElementById("popup").style.display = "flex";
+} else {
+redirect();
+}
+
+function redirect() {
+if (userRole === "worker") {
+window.location.href = "worker.html";
+} else {
+window.location.href = "owner.html";
+}
+}
+
+document.getElementById("skipBtn").addEventListener("click", (e) => {
+e.preventDefault();
+window.location.href = userRole === "worker" ? "worker.html" : "owner.html";
+});
+
+} catch (err) {
+alert(err.message);
+}
+
+});
+
+</script>
+
+</body>
+</html>

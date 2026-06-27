@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkedWith - Sign Up</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+  --paper:#F4F1EC;
+  --primary:#2F4858;
+  --primary-dark:#1C2E38;
+  --accent:#B98655;
+  --line:#E7E3DC;
+  --ink:#22262A;
+  --ink-soft:#6E7378;
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Inter',sans-serif;
+}
+
+body{
+background:#E9E5DD;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+}
+
+.phone-frame{
+width:100%;
+max-width:430px;
+background:var(--paper);
+padding:25px;
+min-height:100vh;
+}
+
+.logo{
+text-align:center;
+margin-top:30px;
+margin-bottom:25px;
+}
+
+.logo h1{
+font-family:'Lora',serif;
+font-size:2rem;
+color:var(--primary);
+}
+
+.logo p{
+color:var(--ink-soft);
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:18px;
+border:1px solid var(--line);
+}
+
+.label{
+display:block;
+font-weight:600;
+margin-bottom:8px;
+}
+
+.input{
+width:100%;
+padding:14px;
+border:1px solid var(--line);
+border-radius:10px;
+outline:none;
+margin-bottom:15px;
+}
+
+.phone-wrap{
+display:flex;
+align-items:center;
+border:1px solid var(--line);
+border-radius:10px;
+overflow:hidden;
+margin-bottom:15px;
+background:white;
+}
+
+.prefix{
+padding:14px;
+background:#f7f7f7;
+border-right:1px solid var(--line);
+font-weight:600;
+color:var(--primary);
+}
+
+.phone-input{
+flex:1;
+padding:14px;
+border:none;
+outline:none;
+}
+
+.role-box{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+}
+
+.role-btn{
+flex:1;
+padding:12px;
+border:1px solid var(--line);
+border-radius:10px;
+background:white;
+cursor:pointer;
+font-weight:600;
+}
+
+.role-btn.active{
+background:var(--primary);
+color:white;
+border-color:var(--primary);
+}
+
+.password-wrap{
+position:relative;
+margin-bottom:15px;
+}
+
+.password-wrap input{
+width:100%;
+padding:14px;
+padding-right:50px;
+border:1px solid var(--line);
+border-radius:10px;
+outline:none;
+}
+
+.eye{
+position:absolute;
+right:15px;
+top:50%;
+transform:translateY(-50%);
+cursor:pointer;
+font-size:18px;
+}
+
+.btn{
+width:100%;
+padding:14px;
+border:none;
+border-radius:10px;
+background:var(--primary);
+color:white;
+font-weight:700;
+cursor:pointer;
+}
+
+.btn:hover{
+background:var(--primary-dark);
+}
+
+.message{
+display:none;
+padding:12px;
+border-radius:10px;
+margin-top:15px;
+font-size:14px;
+}
+
+.success{
+background:#dff6dd;
+color:#256029;
+}
+
+.error{
+background:#ffe5e5;
+color:#b00020;
+}
+
+.login-link{
+margin-top:20px;
+text-align:center;
+}
+
+.login-link a{
+text-decoration:none;
+font-weight:700;
+color:var(--primary);
+}
+
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+<div class="logo">
+<h1>WorkedWith</h1>
+<p>Create Your Account</p>
+</div>
+
+<div class="card">
+
+<label class="label">Register As</label>
+
+<div class="role-box">
+
+<button
+type="button"
+class="role-btn active"
+data-role="worker">
+Worker
+</button>
+
+<button
+type="button"
+class="role-btn"
+data-role="owner">
+Owner
+</button>
+
+</div>
+
+<label class="label">Full Name</label>
+
+<input
+type="text"
+id="name"
+class="input"
+placeholder="Enter your full name">
+
+<label class="label">Email Address</label>
+
+<input
+type="email"
+id="email"
+class="input"
+placeholder="Enter your email">
+
+<label class="label">Phone Number</label>
+
+<div class="phone-wrap">
+<span class="prefix">+91</span>
+
+<input
+type="tel"
+id="phone"
+class="phone-input"
+placeholder="9876543210">
+</div>
+
+<label class="label">Password</label>
+
+<div class="password-wrap">
+
+<input
+type="password"
+id="password"
+placeholder="Create password">
+
+<span
+class="eye"
+onclick="togglePassword('password')">
+👁
+</span>
+
+</div>
+
+<label class="label">Confirm Password</label>
+
+<div class="password-wrap">
+
+<input
+type="password"
+id="confirmPassword"
+placeholder="Confirm password">
+
+<span
+class="eye"
+onclick="togglePassword('confirmPassword')">
+👁
+</span>
+
+</div>
+
+<button
+class="btn"
+id="signupBtn">
+Create Account
+</button>
+
+<div id="message" class="message"></div>
+
+<div class="login-link">
+Already have an account?
+<a href="login.html">Login</a>
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+
+import {
+getAuth,
+createUserWithEmailAndPassword
+}
+from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+
+import {
+getFirestore,
+doc,
+setDoc,
+serverTimestamp
+}
+from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAQpIa5IIcK4NBn0p0zgE2Q-0Xdv6Hu4BQ",
+  authDomain: "workedwith-91d94.firebaseapp.com",
+  projectId: "workedwith-91d94",
+  storageBucket: "workedwith-91d94.firebasestorage.app",
+  messagingSenderId: "793805242005",
+  appId: "1:793805242005:web:45a49b9547bfccad74a59c"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let selectedRole = "worker";
+
+const messageBox =
+document.getElementById("message");
+
+function showMessage(text,type){
+
+messageBox.style.display="block";
+messageBox.className="message " + type;
+messageBox.textContent=text;
+
+}
+
+window.togglePassword = function(id){
+
+const field =
+document.getElementById(id);
+
+field.type =
+field.type === "password"
+? "text"
+: "password";
+
+}
+
+document
+.querySelectorAll(".role-btn")
+.forEach(btn=>{
+
+btn.addEventListener("click",()=>{
+
+document
+.querySelectorAll(".role-btn")
+.forEach(b=>b.classList.remove("active"));
+
+btn.classList.add("active");
+
+selectedRole =
+btn.dataset.role;
+
+});
+
+});
+
+document
+.getElementById("signupBtn")
+.addEventListener("click",async()=>{
+
+try{
+
+const name =
+document.getElementById("name").value.trim();
+
+const email =
+document.getElementById("email").value.trim();
+
+const phone =
+document.getElementById("phone").value.trim();
+
+const password =
+document.getElementById("password").value;
+
+const confirmPassword =
+document.getElementById("confirmPassword").value;
+
+if(
+!name ||
+!email ||
+!phone ||
+!password ||
+!confirmPassword
+){
+showMessage(
+"Please fill all fields",
+"error"
+);
+return;
+}
+
+if(password !== confirmPassword){
+
+showMessage(
+"Passwords do not match",
+"error"
+);
+
+return;
+}
+
+const userCredential =
+await createUserWithEmailAndPassword(
+auth,
+email,
+password
+);
+
+const user =
+userCredential.user;
+
+await setDoc(
+doc(db,"users",user.uid),
+{
+name:name,
+email:email,
+phone:phone,
+role:selectedRole,
+profileCompleted:false,
+createdAt:serverTimestamp()
+}
+);
+
+showMessage(
+"Account created successfully!",
+"success"
+);
+
+setTimeout(()=>{
+
+window.location.href =
+"login.html";
+
+},1500);
+
+}
+catch(error){
+
+showMessage(
+error.message,
+"error"
+);
+
+}
+
+});
+
+</script>
+
+</body>
+</html>

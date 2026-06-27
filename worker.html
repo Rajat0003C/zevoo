@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WorkedWith — Find shops</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper: #F4F1EC;
+  --surface: #FFFFFF;
+  --ink: #22262A;
+  --ink-soft: #6E7378;
+  --primary: #2F4858;
+  --primary-dark: #1C2E38;
+  --primary-light: #4F6E7D;
+  --accent: #B98655;
+  --accent-dark: #8C6239;
+  --accent-soft: #F0E6D8;
+  --line: #E7E3DC;
+  --good: #2E7D4F;
+  --radius: 14px;
+  --shadow: 0 2px 4px rgba(20,20,20,0.05), 0 8px 20px rgba(20,20,20,0.07);
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{
+  background:#E9E5DD;
+  font-family:'Inter', system-ui, sans-serif;
+  color: var(--ink);
+  display:flex; justify-content:center;
+}
+
+.phone-frame{
+  width:100%; max-width:430px;
+  background: var(--paper);
+  min-height:100vh;
+  position:relative;
+  padding-bottom:78px;
+}
+
+h1,h2,h3{ font-family:'Lora', serif; margin:0; }
+.hidden{ display:none !important; }
+
+/* ===== TOP BOX — location + icons + search, all in one colored card ===== */
+.top-box{
+  background: linear-gradient(150deg, var(--primary-dark), var(--primary));
+  padding:18px 18px 20px;
+  border-radius: 0 0 22px 22px;
+  color:#fff;
+}
+.top-box-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.location-pill{
+  display:flex; align-items:center; gap:7px;
+  background:none; border:none; padding:0; cursor:pointer;
+  font-family:'Inter', sans-serif; font-weight:700; font-size:0.92rem; color:#fff;
+  max-width:62%;
+}
+.location-pill svg{ color:#fff; opacity:0.9; flex-shrink:0; }
+.location-pill .chev{ opacity:0.7; margin-left:2px; flex-shrink:0; }
+#locationLabel{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+.top-box-icons{ display:flex; gap:14px; }
+.icon-btn{
+  position:relative; width:34px; height:34px; border-radius:50%;
+  border:none; background:rgba(255,255,255,0.14);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; cursor:pointer;
+}
+.icon-btn .dot{
+  position:absolute; top:5px; right:6px; width:7px; height:7px;
+  background: var(--accent); border-radius:50%; border:1.5px solid var(--primary);
+}
+.avatar-btn{ background:rgba(255,255,255,0.22); }
+
+.search-wrap{
+  display:flex; align-items:center; gap:9px;
+  padding:12px 14px;
+  background: var(--surface); border-radius:12px;
+  color: var(--ink-soft);
+}
+.search-wrap input{
+  border:none; outline:none; flex:1; font-family:'Inter', sans-serif;
+  font-size:0.92rem; color: var(--ink); background:transparent;
+}
+
+/* ===== DROPDOWNS ===== */
+.dropdown{
+  position:fixed; top:80px; left:50%; transform:translateX(-50%);
+  width:calc(100% - 36px); max-width:394px;
+  background: var(--surface); border:1px solid var(--line); border-radius:12px;
+  box-shadow: var(--shadow); padding:14px; z-index:250; color: var(--ink);
+}
+.dropdown-title{ font-weight:700; font-size:0.9rem; margin:0 0 8px; }
+.dropdown-note{ font-size:0.78rem; color: var(--ink-soft); margin:6px 0 0; }
+.dropdown-row{
+  width:100%; display:flex; align-items:center; gap:10px;
+  background:none; border:none; padding:10px 4px; font-size:0.88rem; font-weight:600;
+  color: var(--ink); cursor:pointer; text-align:left; border-radius:8px;
+}
+.dropdown-row:hover{ background: var(--paper); }
+.dropdown-divider{ height:1px; background: var(--line); margin:6px 0; }
+.manual-location-form{ display:flex; gap:8px; }
+.manual-location-form input{
+  flex:1; padding:9px 11px; border:1px solid var(--line); border-radius:8px; font-size:0.86rem; font-family:inherit;
+}
+.btn-mini-primary{
+  background: var(--primary); color:#fff; border:none; border-radius:8px;
+  padding:9px 14px; font-weight:700; font-size:0.84rem; cursor:pointer;
+}
+.btn-block{ width:100%; }
+
+/* ===== Guest banner ===== */
+.mix-note{
+  margin:0 18px 18px; font-size:0.8rem; color: var(--ink-soft); line-height:1.45;
+  background: var(--accent-soft); padding:11px 14px; border-radius:10px;
+}
+.mix-note strong{ color: var(--accent-dark); }
+
+/* ===== SECTIONS ===== */
+.content{ padding-top:20px; }
+.section{ margin-top:24px; }
+.section-head{
+  display:flex; align-items:baseline; justify-content:space-between;
+  padding:0 18px; margin-bottom:12px;
+}
+.section-head h2{ font-size:1.1rem; font-weight:700; }
+.section-sub{ font-size:0.74rem; color: var(--ink-soft); font-family:'IBM Plex Mono', monospace; }
+
+/* ===== TOP RATED — ONE FULL-WIDTH CARD PER SCREEN, SNAP SCROLL ===== */
+.top-scroll{
+  display:flex; overflow-x:auto; scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+}
+.top-scroll::-webkit-scrollbar{ display:none; }
+.top-card{
+  flex:0 0 100%; width:100%; scroll-snap-align:start; scroll-snap-stop:always;
+  padding:0 18px;
+}
+.top-card-inner{
+  border-radius:18px; padding:20px; color:#fff; position:relative; overflow:hidden;
+  min-height:160px; display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.top-card-inner.g1{ background:linear-gradient(135deg, #1C2E38, #3C5564); }
+.top-card-inner.g2{ background:linear-gradient(135deg, #5C4632, #8C6239); }
+.top-card-inner.g3{ background:linear-gradient(135deg, #33392B, #5C6B4D); }
+.top-card-left{ flex:1; min-width:0; }
+.top-card-badge{
+  font-family:'IBM Plex Mono', monospace; font-size:0.66rem; font-weight:600;
+  background:rgba(255,255,255,0.18); padding:3px 8px; border-radius:20px; display:inline-block;
+}
+.top-card-rating{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; font-weight:600; float:right; }
+.top-card-name{ font-family:'Lora', serif; font-weight:700; font-size:1.15rem; margin:10px 0 4px; }
+.top-card-bio{ font-size:0.8rem; opacity:0.88; line-height:1.4; margin-bottom:12px; }
+.top-card-pay{ font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:1rem; }
+.top-card-pay small{ font-weight:500; font-size:0.68rem; opacity:0.8; display:block; }
+.top-card-photo{
+  width:88px; height:88px; border-radius:14px; flex-shrink:0; overflow:hidden;
+  border:2px solid rgba(255,255,255,0.3);
+}
+.top-card-photo.worker{ border-radius:50%; }
+.top-card-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.scroll-dots{ display:flex; justify-content:center; gap:6px; margin-top:12px; }
+.scroll-dots .sdot{
+  width:6px; height:6px; border-radius:50%; background: var(--line); transition: background .15s, width .15s;
+}
+.scroll-dots .sdot.active{ background: var(--primary); width:18px; border-radius:4px; }
+
+/* ===== CATEGORIES — real photo tiles ===== */
+.cat-scroll{ display:flex; gap:16px; overflow-x:auto; padding:0 18px 4px; }
+.cat-scroll::-webkit-scrollbar{ display:none; }
+.cat-tile{
+  flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:7px;
+  background:none; border:none; cursor:pointer; width:64px;
+}
+.cat-tile-icon{
+  width:58px; height:58px; border-radius:16px; overflow:hidden;
+  border:2px solid transparent; background: var(--line);
+}
+.cat-tile-icon img{ width:100%; height:100%; object-fit:cover; display:block; }
+.cat-tile.active .cat-tile-icon{ border-color: var(--primary); }
+.cat-tile-label{
+  font-size:0.74rem; font-weight:600; color: var(--ink-soft); text-align:center; white-space:nowrap;
+}
+.cat-tile.active .cat-tile-label{ color: var(--ink); }
+
+/* ===== MIXED ENTRY LIST: shops + workers ===== */
+.entry-list{ display:flex; flex-direction:column; gap:11px; padding:0 18px; }
+.entry-row{
+  display:flex; align-items:center; gap:12px;
+  background: var(--surface); border:1px solid var(--line); border-radius:12px;
+  padding:12px 14px;
+}
+.entry-avatar{
+  width:48px; height:48px; flex-shrink:0; overflow:hidden; background: var(--line);
+}
+.entry-avatar.shop{ border-radius:11px; }
+.entry-avatar.worker{ border-radius:50%; }
+.entry-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+.entry-main{ flex:1; min-width:0; }
+.entry-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.entry-name{ font-weight:700; font-size:0.94rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.entry-pay{ font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:0.86rem; color: var(--primary-dark); flex-shrink:0; }
+.entry-meta{ display:flex; gap:8px; align-items:center; font-size:0.74rem; color: var(--ink-soft); margin-top:3px; flex-wrap:wrap; }
+.entry-meta .rating{ color: var(--accent-dark); font-weight:600; }
+.tag-type{
+  font-family:'IBM Plex Mono', monospace; font-size:0.64rem; font-weight:700; padding:1px 7px; border-radius:20px;
+  text-transform:uppercase; letter-spacing:0.02em;
+}
+.tag-type.shop{ background:#E6F1F5; color: var(--primary-dark); }
+.tag-type.worker{ background: var(--accent-soft); color: var(--accent-dark); }
+.entry-action{
+  flex-shrink:0; background: var(--primary); color:#fff; border:none; border-radius:8px;
+  padding:7px 13px; font-size:0.78rem; font-weight:700; cursor:pointer;
+}
+.empty-note{ color: var(--ink-soft); font-size:0.86rem; padding:10px 0; }
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:430px;
+  display:flex; justify-content:space-around;
+  background: var(--surface); border-top:1px solid var(--line);
+  padding:9px 4px 11px;
+}
+.nav-item{
+  background:none; border:none; display:flex; flex-direction:column; align-items:center; gap:3px;
+  color: var(--ink-soft); font-size:0.66rem; font-weight:600; cursor:pointer; padding:4px 6px;
+}
+.nav-item.active{ color: var(--primary); }
+
+@media (min-width:431px){
+  body{ background:#E9E5DD; }
+  .phone-frame{ box-shadow:0 0 0 1px var(--line), var(--shadow); margin:24px 0; border-radius:24px; overflow:hidden; min-height:auto; }
+  .bottom-nav{ border-radius:0 0 24px 24px; }
+}
+
+/* ===== Toast feedback ===== */
+.toast{
+  position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(8px);
+  background: var(--primary-dark); color:#fff; padding:11px 20px; border-radius:30px;
+  font-size:0.82rem; font-weight:600; box-shadow: var(--shadow);
+  opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease; z-index:300;
+  max-width:88%; text-align:center;
+}
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ===== Dropdown content (notif / profile, logged-in state) ===== */
+.notif-empty{ font-size:0.84rem; color: var(--ink-soft); padding:8px 4px 4px; }
+.profile-head{ display:flex; align-items:center; gap:11px; padding-bottom:10px; border-bottom:1px solid var(--line); margin-bottom:8px; }
+.profile-head img{ width:42px; height:42px; border-radius:50%; object-fit:cover; }
+.profile-head-name{ font-weight:700; font-size:0.92rem; }
+.profile-head-role{ font-size:0.74rem; color: var(--ink-soft); font-family:'IBM Plex Mono', monospace; }
+
+/* ===== Action button done-state ===== */
+.entry-action.done{ background: var(--good); }
+.entry-action:disabled{ opacity:0.85; cursor:default; }
+
+/* ===== Stat strip under shop/worker bio (age, gender, business type, etc.) ===== */
+.entry-extra{ font-size:0.72rem; color: var(--ink-soft); margin-top:2px; }
+.top-card-extra{ font-size:0.74rem; opacity:0.82; margin-top:2px; }
+
+/* ===== View switching (Home / Hiring|Applicants / Applied|Hired) ===== */
+.view{ display:block; }
+.view.hidden{ display:none; }
+
+/* ===== Status lists (Applied / Hiring / Applicants / Hired) ===== */
+.status-row{
+  display:flex; align-items:center; gap:12px;
+  background: var(--surface); border:1px solid var(--line); border-radius:12px;
+  padding:12px 14px; cursor:pointer;
+}
+.status-row .entry-avatar{ width:44px; height:44px; }
+.status-main{ flex:1; min-width:0; }
+.status-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.status-name{ font-weight:700; font-size:0.92rem; }
+.status-pay{ font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:0.84rem; color: var(--primary-dark); }
+.status-meta{ font-size:0.74rem; color: var(--ink-soft); margin-top:3px; }
+.pill-status{
+  font-family:'IBM Plex Mono', monospace; font-size:0.65rem; font-weight:700; padding:2px 9px; border-radius:20px;
+  text-transform:uppercase;
+}
+.pill-status.pending{ background:#F4E9D3; color:#8C6239; }
+.pill-status.accepted{ background:#DDEEE2; color: var(--good); }
+.pill-status.rejected{ background:#F6DEDA; color:#B4452F; }
+.status-actions{ display:flex; gap:8px; margin-top:8px; }
+.btn-accept{ background: var(--good); color:#fff; border:none; border-radius:7px; padding:6px 13px; font-size:0.78rem; font-weight:700; cursor:pointer; }
+.btn-reject{ background:#F6DEDA; color:#B4452F; border:none; border-radius:7px; padding:6px 13px; font-size:0.78rem; font-weight:700; cursor:pointer; }
+.matched-note{ font-size:0.76rem; color: var(--good); margin-top:6px; font-weight:600; }
+
+/* ===== Profile modal ===== */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(20,24,28,0.55); z-index:500;
+  display:flex; align-items:flex-end; justify-content:center;
+}
+.modal-overlay.hidden{ display:none; }
+.profile-modal{
+  background: var(--surface); width:100%; max-width:430px; max-height:88vh; overflow-y:auto;
+  border-radius:20px 20px 0 0; position:relative; animation:slideUp .2s ease;
+}
+@keyframes slideUp{ from{ transform:translateY(30px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
+.modal-close{
+  position:absolute; top:12px; right:12px; width:32px; height:32px; border-radius:50%;
+  background:rgba(0,0,0,0.35); color:#fff; border:none; font-size:1.1rem; cursor:pointer; z-index:2;
+}
+.profile-cover{ width:100%; height:180px; overflow:hidden; background: var(--line); }
+.profile-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
+.profile-cover.worker{ display:flex; align-items:center; justify-content:center; background: var(--primary-dark); }
+.profile-cover.worker img{ width:140px; height:140px; border-radius:50%; border:4px solid #fff; }
+.profile-gallery{ display:flex; gap:8px; padding:10px 18px; overflow-x:auto; }
+.profile-gallery img{ width:60px; height:60px; border-radius:9px; object-fit:cover; flex-shrink:0; cursor:pointer; border:2px solid transparent; }
+.profile-gallery img.active{ border-color: var(--primary); }
+.profile-body{ padding:6px 18px 24px; }
+.profile-row-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.profile-row-top h3{ font-size:1.2rem; }
+.badge-rating{ font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:0.85rem; color: var(--accent-dark); flex-shrink:0; }
+.profile-tags{ display:flex; gap:7px; margin:8px 0 10px; flex-wrap:wrap; }
+.profile-bio{ font-size:0.88rem; color: var(--ink-soft); line-height:1.5; margin:0 0 14px; }
+.profile-stats{ display:flex; gap:18px; margin-bottom:16px; flex-wrap:wrap; }
+.pstat{ }
+.pstat-val{ font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:1rem; color: var(--ink); }
+.pstat-label{ font-size:0.68rem; color: var(--ink-soft); text-transform:uppercase; letter-spacing:0.03em; }
+.profile-actions{ display:flex; gap:10px; margin-bottom:6px; }
+.btn-follow{
+  flex:1; background: var(--surface); border:1.5px solid var(--primary); color: var(--primary-dark);
+  border-radius:9px; padding:11px; font-weight:700; font-size:0.88rem; cursor:pointer;
+}
+.btn-follow.following{ background: var(--primary-dark); color:#fff; border-color: var(--primary-dark); }
+.btn-primary-action{ flex:1; background: var(--primary); color:#fff; border:none; border-radius:9px; padding:11px; font-weight:700; font-size:0.88rem; cursor:pointer; }
+.btn-primary-action:disabled{ background: var(--good); opacity:0.9; cursor:default; }
+.contact-box{
+  background: var(--accent-soft); border-radius:10px; padding:12px 14px; margin:14px 0; font-size:0.84rem; color: var(--accent-dark);
+}
+.profile-rate-box{ background: var(--paper); border-radius:12px; padding:14px; margin:14px 0; }
+.profile-rate-box.hidden{ display:none; }
+.star-row{ display:flex; gap:6px; margin:8px 0 10px; font-size:1.5rem; cursor:pointer; }
+.star-row span{ color: var(--line); transition:color .1s; }
+.star-row span.lit{ color: var(--accent); }
+.profile-rate-box textarea{
+  width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-family:'Inter',sans-serif;
+  font-size:0.85rem; resize:vertical; margin-bottom:8px;
+}
+.profile-reviews{ margin-top:6px; }
+.review-item{ padding:9px 0; border-bottom:1px solid var(--line); font-size:0.82rem; }
+.review-item:last-child{ border-bottom:none; }
+.review-stars{ color: var(--accent); font-size:0.78rem; margin-bottom:2px; }
+.review-comment{ color: var(--ink-soft); }
+.empty-reviews{ font-size:0.82rem; color: var(--ink-soft); padding:6px 0; }
+
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <header class="top-box">
+    <div class="top-box-row">
+      <button class="location-pill" id="locationPill">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-6.1-7-11.5C5 5.4 8.1 3 12 3s7 2.4 7 6.5C19 14.9 12 21 12 21z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9.5" r="2.4" stroke="currentColor" stroke-width="1.8"/></svg>
+        <span id="locationLabel">Set your location</span>
+        <svg class="chev" width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+      <div class="top-box-icons">
+        <button class="icon-btn" id="notifBtn" aria-label="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 1 0-12 0c0 4-2 5-2 6h16c0-1-2-2-2-6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="1.8"/></svg>
+        </button>
+        <button class="icon-btn avatar-btn" id="profileBtn" aria-label="Profile">
+          <img id="topAvatarImg" src="https://i.pravatar.cc/100?img=12" alt="Me" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />
+        </button>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="text" id="searchInput" placeholder="Search shops — bakery, grocery, salon…" />
+    </div>
+  </header>
+
+  <div class="dropdown hidden" id="locationDropdown">
+    <button class="dropdown-row" id="useGpsBtn">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Use my current location (GPS)
+    </button>
+    <div class="dropdown-divider"></div>
+    <form id="manualLocationForm" class="manual-location-form">
+      <input type="text" id="manualLocationInput" placeholder="Type your area or city" />
+      <button type="submit" class="btn-mini-primary">Set</button>
+    </form>
+    <p class="dropdown-note" id="locationNote"></p>
+  </div>
+
+  <div class="dropdown hidden" id="notifDropdown">
+    <p class="dropdown-title">Notifications</p>
+    <p class="notif-empty" id="notifContent">No notifications yet.</p>
+  </div>
+
+  <div class="dropdown hidden" id="profileDropdown">
+    <div class="profile-head">
+      <img src="https://i.pravatar.cc/100?img=12" alt="Profile" />
+      <div>
+        <div class="profile-head-name">Rohan Das</div>
+        <div class="profile-head-role">Worker</div>
+      </div>
+    </div>
+    <button class="dropdown-row" id="logoutBtn">Log out</button>
+  </div>
+
+  <main class="content">
+
+    <!-- ===== HOME VIEW ===== -->
+    <div class="view" id="view-home">
+      <section class="section">
+        <div class="section-head">
+          <h2>Top shops for you</h2>
+          <span class="section-sub" id="distanceHint">Set location for distance</span>
+        </div>
+        <div class="top-scroll" id="topScroll"></div>
+        <div class="scroll-dots" id="scrollDots"></div>
+      </section>
+      <section class="section">
+        <div class="cat-scroll" id="catScroll"></div>
+      </section>
+      <section class="section">
+        <div class="section-head">
+          <h2>Shops near you</h2>
+          <span class="section-sub" id="listCount"></span>
+        </div>
+        <p class="dropdown-note" style="padding:0 18px 8px;">Tap a shop to see its full profile and photos. Tap "Apply" to send your details directly.</p>
+        <div class="entry-list" id="entryList"></div>
+      </section>
+    </div>
+
+    <!-- ===== HIRING ME VIEW ===== -->
+    <div class="view hidden" id="view-hiring">
+      <section class="section">
+        <div class="section-head"><h2>Shops want to hire you</h2></div>
+        <p class="dropdown-note" style="padding:0 18px 8px;">Confirm to share your profile with the shop, or reject if it's not a fit.</p>
+        <div class="status-list" id="hiringList"></div>
+      </section>
+    </div>
+
+    <!-- ===== APPLIED VIEW ===== -->
+    <div class="view hidden" id="view-applied">
+      <section class="section">
+        <div class="section-head"><h2>Your applications</h2></div>
+        <p class="dropdown-note" style="padding:0 18px 8px;">If a shop confirms you, their contact details unlock here.</p>
+        <div class="status-list" id="appliedList"></div>
+      </section>
+    </div>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-nav="home">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 4l8 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9h12v-9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="nav-item" data-nav="hiring">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c1.4-3.8 4.4-5.8 8-5.8s6.6 2 8 5.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 4l1.6 1.6L21 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Hiring</span>
+    </button>
+    <button class="nav-item" data-nav="search">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Search</span>
+    </button>
+    <button class="nav-item" data-nav="applied">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M7 4h8l3 3v13H4V4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 11h8M8 15h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Applied</span>
+    </button>
+    <button class="nav-item" data-nav="profile">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.8"/><path d="M4.8 19.5c1.3-3.4 4.2-5.2 7.2-5.2s5.9 1.8 7.2 5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Profile</span>
+    </button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- ===== PROFILE MODAL (shared for shop & worker detail views) ===== -->
+  <div class="modal-overlay hidden" id="profileModal">
+    <div class="profile-modal">
+      <button class="modal-close" id="closeProfileModal">×</button>
+      <div class="profile-cover" id="pmCoverWrap"><img id="pmCover" src="" alt="" /></div>
+      <div class="profile-gallery" id="pmGallery"></div>
+      <div class="profile-body">
+        <div class="profile-row-top">
+          <h3 id="pmName"></h3>
+          <span class="badge-rating" id="pmRating"></span>
+        </div>
+        <div class="profile-tags" id="pmTags"></div>
+        <p class="profile-bio" id="pmBio"></p>
+        <div class="profile-stats" id="pmStats"></div>
+        <div class="profile-actions" id="pmActions"></div>
+        <div class="contact-box hidden" id="pmContactBox"></div>
+        <div class="profile-rate-box hidden" id="pmRateBox">
+          <p class="dropdown-title">Rate this shop</p>
+          <div class="star-row" id="pmStars">
+            <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+          </div>
+          <textarea id="pmRateComment" rows="2" placeholder="Optional comment"></textarea>
+          <button class="btn-mini-primary" id="pmSubmitRating">Submit rating</button>
+        </div>
+        <div class="profile-reviews" id="pmReviews"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ======================================================================
+   WORKER VIEW. Cross-page sync (applications/hires/follows/ratings) uses
+   localStorage shared with owner.html — this only works when both pages
+   are opened in the SAME browser (ideally via a local server, not
+   double-clicking the file, since some browsers isolate file:// storage).
+   A real version of this needs a backend; this simulates it for the demo.
+   ====================================================================== */
+function getSavedProfile() {
+  try { const p = JSON.parse(localStorage.getItem('ww_myProfile')); return p || null; } catch(e) { return null; }
+}
+const savedWorkerProfile = getSavedProfile();
+const CURRENT_WORKER = (savedWorkerProfile && savedWorkerProfile.role === 'worker' && savedWorkerProfile.name)
+  ? savedWorkerProfile.name
+  : "Rohan Das"; // falls back to demo identity if no profile has been saved yet
+
+const photoFor = {
+  Grocery: "https://loremflickr.com/400/300/grocery,vegetables",
+  Chicken: "https://loremflickr.com/400/300/chicken,poultry",
+  Fish:    "https://loremflickr.com/400/300/fish,seafood",
+  Bakery:  "https://loremflickr.com/400/300/bakery,bread",
+  Sweets:  "https://loremflickr.com/400/300/sweets,dessert"
+};
+const BASE_LAT = 24.8170, BASE_LNG = 93.9368;
+function jitter(km) { return (Math.random() - 0.5) * (km / 111); }
+
+const shops = [
+  { name:"Wolt Market",         category:"Grocery", businessAge:"6 yrs running", bio:"Stock & billing, evening shift. We're a family-run grocery store looking for reliable, friendly help.", maxPay:16000, rating:4.9, followers:212, lat:BASE_LAT+jitter(2), lng:BASE_LNG+jitter(2), photo:photoFor.Grocery },
+  { name:"Tara General Store",  category:"Grocery", businessAge:"3 yrs running", bio:"Daily pay, evening shift.",            maxPay:13500, rating:4.8, followers:96,  lat:BASE_LAT+jitter(3), lng:BASE_LNG+jitter(3), photo:photoFor.Grocery },
+  { name:"Fresh Chicken Point", category:"Chicken", businessAge:"2 yrs running", bio:"Cleaning & counter help, urgent.",     maxPay:15500, rating:4.3, followers:54,  lat:BASE_LAT+jitter(4), lng:BASE_LNG+jitter(4), photo:photoFor.Chicken },
+  { name:"Zing Restaurant",     category:"Chicken", businessAge:"5 yrs running", bio:"Weekend cashier needed.",              maxPay:19000, rating:4.6, followers:140, lat:BASE_LAT+jitter(2.5), lng:BASE_LNG+jitter(2.5), photo:photoFor.Chicken },
+  { name:"Hilsa Fish Mart",     category:"Fish",    businessAge:"9 yrs running", bio:"Early morning, good tips.",            maxPay:16500, rating:4.5, followers:88,  lat:BASE_LAT+jitter(5), lng:BASE_LNG+jitter(5), photo:photoFor.Fish },
+  { name:"Golden Crust Bakery", category:"Bakery",  businessAge:"1 yr running",  bio:"Baker's assistant, training given.",  maxPay:14000, rating:4.7, followers:61,  lat:BASE_LAT+jitter(3), lng:BASE_LNG+jitter(3), photo:photoFor.Bakery },
+  { name:"Mishti Ghar",         category:"Sweets",  businessAge:"4 yrs running", bio:"Festival rush, extra pay this week.", maxPay:18000, rating:4.4, followers:73,  lat:BASE_LAT+jitter(6), lng:BASE_LNG+jitter(6), photo:photoFor.Sweets }
+];
+const shopByName = name => shops.find(s => s.name === name);
+
+/* ---------- Merge in shops that owners have published via profile.html ---------- */
+(function mergePublishedShops() {
+  let published = [];
+  try { published = JSON.parse(localStorage.getItem('ww_shops')) || []; } catch(e) { published = []; }
+  published.forEach(p => {
+    const idx = shops.findIndex(s => s.name === p.name);
+    if (idx >= 0) shops[idx] = p; else shops.push(p);
+  });
+})();
+
+const categories = [
+  { key:"all",     label:"All",     img:"https://loremflickr.com/120/120/shop,storefront" },
+  { key:"Grocery", label:"Grocery", img:photoFor.Grocery },
+  { key:"Chicken", label:"Chicken", img:photoFor.Chicken },
+  { key:"Fish",    label:"Fish",    img:photoFor.Fish },
+  { key:"Bakery",  label:"Bakery",  img:photoFor.Bakery },
+  { key:"Sweets",  label:"Sweets",  img:photoFor.Sweets }
+];
+
+let activeCategory = "all";
+let searchTerm = "";
+let userCoords = null;
+let currentView = "home";
+
+/* ---------- Shared localStorage state (sync point with owner.html) ---------- */
+function loadLS(key, fallback) { try { const v = JSON.parse(localStorage.getItem(key)); return v || fallback; } catch(e) { return fallback; } }
+function saveLS(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+function getApplications() { return loadLS('ww_applications', []); }
+function getHireOffers() { return loadLS('ww_hireOffers', []); }
+function getFollowsWorker() { return loadLS('ww_follows_worker', []); } // shop names this worker follows
+function getRatings() { return loadLS('ww_ratings', []); }
+
+function applyToShop(shopName) {
+  const apps = getApplications();
+  if (apps.some(a => a.worker === CURRENT_WORKER && a.shop === shopName)) { showToast('Already applied to ' + shopName); return; }
+  apps.push({ id: Date.now(), worker: CURRENT_WORKER, shop: shopName, status: 'pending', appliedAt: new Date().toISOString() });
+  saveLS('ww_applications', apps);
+  showToast('Your profile was sent to ' + shopName);
+  renderEntryList(); renderAppliedList();
+}
+function respondToHireOffer(id, accept) {
+  const offers = getHireOffers();
+  const o = offers.find(x => x.id === id);
+  if (!o) return;
+  o.status = accept ? 'accepted' : 'rejected';
+  saveLS('ww_hireOffers', offers);
+  showToast(accept ? 'Confirmed — ' + o.shop + ' can now see you matched.' : 'Offer declined.');
+  renderHiringList();
+}
+function isMatchedWithShop(shopName) {
+  const apps = getApplications().some(a => a.worker===CURRENT_WORKER && a.shop===shopName && a.status==='accepted');
+  const offers = getHireOffers().some(o => o.worker===CURRENT_WORKER && o.shop===shopName && o.status==='accepted');
+  return apps || offers;
+}
+function toggleFollowShop(shopName) {
+  let f = getFollowsWorker();
+  if (f.includes(shopName)) f = f.filter(n => n !== shopName); else f.push(shopName);
+  saveLS('ww_follows_worker', f);
+  return f.includes(shopName);
+}
+function submitRating(shopName, stars, comment) {
+  const ratings = getRatings();
+  ratings.push({ from: CURRENT_WORKER, fromType:'worker', to: shopName, toType:'shop', stars, comment, ts: new Date().toISOString() });
+  saveLS('ww_ratings', ratings);
+  showToast('Rating submitted for ' + shopName);
+}
+function getRatingsFor(name) { return getRatings().filter(r => r.to === name); }
+function displayRating(shop) {
+  const extra = getRatingsFor(shop.name);
+  if (!extra.length) return shop.rating;
+  const total = extra.reduce((s,r) => s + r.stars, shop.rating) ;
+  return (total / (extra.length + 1)).toFixed(1);
+}
+
+/* ---------- Distance ---------- */
+function distanceKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function getDistanceLabel(e) {
+  if (!userCoords) return null;
+  const d = distanceKm(userCoords.lat, userCoords.lng, e.lat, e.lng);
+  return d < 1 ? Math.round(d*1000)+"m away" : d.toFixed(1)+"km away";
+}
+function sortedByRelevance(list) {
+  if (userCoords) return [...list].sort((a,b)=>distanceKm(userCoords.lat,userCoords.lng,a.lat,a.lng)-distanceKm(userCoords.lat,userCoords.lng,b.lat,b.lng));
+  return [...list].sort((a,b)=>(b.rating+b.maxPay/30000)-(a.rating+a.maxPay/30000));
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+/* ---------- Profile modal ---------- */
+let pmCurrentShop = null;
+let pmSelectedStars = 0;
+function openShopProfile(shopName) {
+  const s = shopByName(shopName);
+  if (!s) return;
+  pmCurrentShop = s;
+  pmSelectedStars = 0;
+  document.getElementById('pmCoverWrap').className = 'profile-cover';
+  document.getElementById('pmCover').src = s.photo + '&_=' + Math.floor(Math.random()*1000);
+  document.getElementById('pmGallery').innerHTML = [1,2,3].map(i =>
+    `<img src="${s.photo}&_=${i}${Math.random()}" alt="${s.name} photo ${i}" loading="lazy" />`
+  ).join('');
+  document.getElementById('pmName').textContent = s.name;
+  document.getElementById('pmRating').textContent = '★ ' + displayRating(s);
+  document.getElementById('pmTags').innerHTML = `<span class="tag-type shop">${s.category}</span><span class="tag-cat" style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;background:#E6F1F5;color:var(--primary-dark);padding:1px 7px;border-radius:20px;">${s.businessAge}</span>`;
+  document.getElementById('pmBio').textContent = s.bio;
+  const distLabel = getDistanceLabel(s);
+  document.getElementById('pmStats').innerHTML = `
+    <div class="pstat"><div class="pstat-val">₹${s.maxPay.toLocaleString('en-IN')}</div><div class="pstat-label">Max pay / mo</div></div>
+    <div class="pstat"><div class="pstat-val">${s.followers + (getFollowsWorker().includes(s.name)?1:0)}</div><div class="pstat-label">Followers</div></div>
+    <div class="pstat"><div class="pstat-val">${distLabel || '—'}</div><div class="pstat-label">Distance</div></div>
+  `;
+  const applied = getApplications().some(a => a.worker===CURRENT_WORKER && a.shop===s.name);
+  const following = getFollowsWorker().includes(s.name);
+  document.getElementById('pmActions').innerHTML = `
+    <button class="btn-follow ${following?'following':''}" id="pmFollowBtn">${following?'Following ✓':'+ Follow'}</button>
+    <button class="btn-primary-action" id="pmApplyBtn" ${applied?'disabled':''}>${applied?'Applied ✓':'Apply'}</button>
+  `;
+  document.getElementById('pmFollowBtn').onclick = () => { toggleFollowShop(s.name); openShopProfile(s.name); renderEntryList(); };
+  document.getElementById('pmApplyBtn').onclick = () => { if (!applied) { applyToShop(s.name); openShopProfile(s.name); } };
+
+  const matched = isMatchedWithShop(s.name);
+  const contactBox = document.getElementById('pmContactBox');
+  if (matched) {
+    contactBox.classList.remove('hidden');
+    contactBox.innerHTML = `✓ You're matched with ${s.name}. Contact: <strong>+91 98xxxxxx12</strong> (owner)`;
+  } else { contactBox.classList.add('hidden'); }
+
+  const rateBox = document.getElementById('pmRateBox');
+  rateBox.classList.toggle('hidden', !matched);
+  document.querySelector('#pmRateBox .dropdown-title').textContent = 'Rate ' + s.name;
+  wireStars();
+
+  renderReviews(s.name);
+  document.getElementById('profileModal').classList.remove('hidden');
+}
+function wireStars() {
+  const stars = document.querySelectorAll('#pmStars span');
+  stars.forEach(st => {
+    st.classList.remove('lit');
+    st.onclick = () => {
+      pmSelectedStars = parseInt(st.dataset.v);
+      stars.forEach(s2 => s2.classList.toggle('lit', parseInt(s2.dataset.v) <= pmSelectedStars));
+    };
+  });
+  document.getElementById('pmSubmitRating').onclick = () => {
+    if (!pmSelectedStars) { showToast('Pick a star rating first.'); return; }
+    submitRating(pmCurrentShop.name, pmSelectedStars, document.getElementById('pmRateComment').value.trim());
+    document.getElementById('pmRateComment').value = '';
+    openShopProfile(pmCurrentShop.name);
+  };
+}
+function renderReviews(name) {
+  const list = getRatingsFor(name);
+  const wrap = document.getElementById('pmReviews');
+  if (!list.length) { wrap.innerHTML = '<p class="empty-reviews">No reviews yet.</p>'; return; }
+  wrap.innerHTML = list.slice().reverse().map(r => `
+    <div class="review-item">
+      <div class="review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)} — ${r.from}</div>
+      ${r.comment ? `<div class="review-comment">${r.comment}</div>` : ''}
+    </div>`).join('');
+}
+document.getElementById('closeProfileModal').addEventListener('click', () => document.getElementById('profileModal').classList.add('hidden'));
+document.getElementById('profileModal').addEventListener('click', e => { if (e.target.id === 'profileModal') e.currentTarget.classList.add('hidden'); });
+
+/* ---------- Render: top carousel ---------- */
+function renderTopShops() {
+  const top = sortedByRelevance(shops).slice(0, 6);
+  const gradients = ['g1','g2','g3'];
+  const wrap = document.getElementById('topScroll');
+  wrap.innerHTML = top.map((s,i) => {
+    const distLabel = getDistanceLabel(s);
+    return `
+    <div class="top-card" data-shop="${s.name}" style="cursor:pointer;">
+      <div class="top-card-inner ${gradients[i % gradients.length]}">
+        <div class="top-card-left">
+          <span class="top-card-badge">${s.category.toUpperCase()}</span>
+          <span class="top-card-rating">★ ${displayRating(s)}</span>
+          <div class="top-card-name">${s.name}</div>
+          <div class="top-card-bio">${s.bio}</div>
+          <div class="top-card-extra">${s.businessAge}${distLabel ? ' · ' + distLabel : ''}</div>
+          <div class="top-card-pay">₹${s.maxPay.toLocaleString('en-IN')}<small>max pay / month</small></div>
+        </div>
+        <div class="top-card-photo"><img src="${s.photo}" alt="${s.name}" loading="lazy" /></div>
+      </div>
+    </div>`;
+  }).join('');
+  wrap.querySelectorAll('.top-card').forEach(card => card.addEventListener('click', () => openShopProfile(card.dataset.shop)));
+  document.getElementById('distanceHint').textContent = userCoords ? 'Sorted by distance' : 'Set location for distance';
+  renderScrollDots(top.length); wireScrollSync();
+}
+function renderScrollDots(count) {
+  document.getElementById('scrollDots').innerHTML = Array.from({length:count}).map((_,i)=>`<span class="sdot ${i===0?'active':''}"></span>`).join('');
+}
+function wireScrollSync() {
+  const wrap = document.getElementById('topScroll');
+  wrap.onscroll = () => {
+    const index = Math.round(wrap.scrollLeft / wrap.clientWidth);
+    document.querySelectorAll('#scrollDots .sdot').forEach((d,i)=>d.classList.toggle('active', i===index));
+  };
+}
+function renderCategories() {
+  const wrap = document.getElementById('catScroll');
+  wrap.innerHTML = categories.map(c => `
+    <button class="cat-tile ${c.key===activeCategory?'active':''}" data-cat="${c.key}">
+      <span class="cat-tile-icon"><img src="${c.img}" alt="${c.label}" loading="lazy" /></span>
+      <span class="cat-tile-label">${c.label}</span>
+    </button>`).join('');
+  wrap.querySelectorAll('.cat-tile').forEach(btn => btn.addEventListener('click', () => { activeCategory = btn.dataset.cat; renderCategories(); renderEntryList(); }));
+}
+
+/* ---------- Render: shop list (row click = profile, button = apply) ---------- */
+function renderEntryList() {
+  let filtered = shops.filter(s =>
+    (activeCategory==='all' || s.category===activeCategory) &&
+    (s.name.toLowerCase().includes(searchTerm) || s.category.toLowerCase().includes(searchTerm) || s.bio.toLowerCase().includes(searchTerm))
+  );
+  filtered = sortedByRelevance(filtered);
+  const list = document.getElementById('entryList');
+  document.getElementById('listCount').textContent = filtered.length + ' shop' + (filtered.length===1?'':'s');
+  if (!filtered.length) { list.innerHTML = '<p class="empty-note">No shops match that search yet.</p>'; return; }
+  const applications = getApplications();
+  list.innerHTML = filtered.map(s => {
+    const distLabel = getDistanceLabel(s);
+    const applied = applications.some(a => a.worker===CURRENT_WORKER && a.shop===s.name);
+    return `
+    <div class="entry-row" data-shop="${s.name}" style="cursor:pointer;">
+      <div class="entry-avatar shop" data-shop-avatar="${s.name}"><img src="${s.photo}" alt="${s.name}" loading="lazy" /></div>
+      <div class="entry-main">
+        <div class="entry-top"><span class="entry-name">${s.name}</span><span class="entry-pay">₹${s.maxPay.toLocaleString('en-IN')}/mo</span></div>
+        <div class="entry-meta">
+          <span class="tag-type shop">${s.category}</span>
+          <span class="rating">★ ${displayRating(s)}</span>
+          <span>${distLabel || 'Set location for distance'}</span>
+        </div>
+        <div class="entry-extra">${s.businessAge}</div>
+      </div>
+      <button class="entry-action ${applied?'done':''}" data-apply="${s.name}" ${applied?'disabled':''}>${applied?'Applied ✓':'Apply'}</button>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.entry-row').forEach(row => row.addEventListener('click', e => {
+    if (e.target.closest('[data-apply]')) return;
+    openShopProfile(row.dataset.shop);
+  }));
+  list.querySelectorAll('[data-apply]:not(:disabled)').forEach(btn => btn.addEventListener('click', e => { e.stopPropagation(); applyToShop(btn.dataset.apply); }));
+}
+
+/* ---------- Render: Hiring (offers from shops) ---------- */
+function renderHiringList() {
+  const offers = getHireOffers().filter(o => o.worker === CURRENT_WORKER);
+  const wrap = document.getElementById('hiringList');
+  if (!offers.length) { wrap.innerHTML = '<p class="empty-note" style="padding:0 18px;">No shops have offered to hire you yet.</p>'; return; }
+  wrap.innerHTML = offers.slice().reverse().map(o => {
+    const s = shopByName(o.shop);
+    return `
+    <div class="status-row" data-shop="${o.shop}">
+      <div class="entry-avatar shop"><img src="${s ? s.photo : ''}" alt="${o.shop}" loading="lazy" /></div>
+      <div class="status-main">
+        <div class="status-top"><span class="status-name">${o.shop}</span><span class="pill-status ${o.status}">${o.status}</span></div>
+        <div class="status-meta">Offered ₹${s ? s.maxPay.toLocaleString('en-IN') : '—'}/mo</div>
+        ${o.status==='pending' ? `
+          <div class="status-actions">
+            <button class="btn-accept" data-accept="${o.id}">Confirm</button>
+            <button class="btn-reject" data-reject="${o.id}">Reject</button>
+          </div>` : o.status==='accepted' ? `<div class="matched-note">✓ Matched — view their profile for contact details</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  wrap.querySelectorAll('[data-accept]').forEach(b => b.addEventListener('click', () => respondToHireOffer(parseInt(b.dataset.accept), true)));
+  wrap.querySelectorAll('[data-reject]').forEach(b => b.addEventListener('click', () => respondToHireOffer(parseInt(b.dataset.reject), false)));
+  wrap.querySelectorAll('.status-row').forEach(row => row.addEventListener('click', e => { if (!e.target.closest('button')) openShopProfile(row.dataset.shop); }));
+}
+
+/* ---------- Render: Applied (my applications) ---------- */
+function renderAppliedList() {
+  const apps = getApplications().filter(a => a.worker === CURRENT_WORKER);
+  const wrap = document.getElementById('appliedList');
+  if (!apps.length) { wrap.innerHTML = '<p class="empty-note" style="padding:0 18px;">You have not applied anywhere yet.</p>'; return; }
+  wrap.innerHTML = apps.slice().reverse().map(a => {
+    const s = shopByName(a.shop);
+    return `
+    <div class="status-row" data-shop="${a.shop}">
+      <div class="entry-avatar shop"><img src="${s ? s.photo : ''}" alt="${a.shop}" loading="lazy" /></div>
+      <div class="status-main">
+        <div class="status-top"><span class="status-name">${a.shop}</span><span class="pill-status ${a.status}">${a.status}</span></div>
+        <div class="status-meta">Applied ${new Date(a.appliedAt).toLocaleDateString()}</div>
+        ${a.status==='accepted' ? `<div class="matched-note">✓ Confirmed — view their profile for contact details</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  wrap.querySelectorAll('.status-row').forEach(row => row.addEventListener('click', () => openShopProfile(row.dataset.shop)));
+}
+
+/* ---------- Search ---------- */
+document.getElementById('searchInput').addEventListener('input', e => { searchTerm = e.target.value.trim().toLowerCase(); renderEntryList(); });
+
+/* ---------- Dropdowns ---------- */
+const dropdowns = { location: document.getElementById('locationDropdown'), notif: document.getElementById('notifDropdown'), profile: document.getElementById('profileDropdown') };
+function toggleDropdown(name) { Object.entries(dropdowns).forEach(([k,el]) => k===name ? el.classList.toggle('hidden') : el.classList.add('hidden')); }
+document.getElementById('locationPill').addEventListener('click', () => toggleDropdown('location'));
+document.getElementById('notifBtn').addEventListener('click', () => toggleDropdown('notif'));
+document.getElementById('profileBtn').addEventListener('click', () => toggleDropdown('profile'));
+document.addEventListener('click', e => { if (!e.target.closest('.dropdown, #locationPill, #notifBtn, #profileBtn')) Object.values(dropdowns).forEach(el => el.classList.add('hidden')); });
+
+document.getElementById('useGpsBtn').addEventListener('click', () => {
+  const note = document.getElementById('locationNote');
+  if (!navigator.geolocation) { note.textContent = 'GPS not supported on this browser.'; return; }
+  note.textContent = 'Getting your location…';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      document.getElementById('locationLabel').textContent = `Your location (±${Math.round(pos.coords.accuracy)}m)`;
+      note.textContent = 'Location set — distances are real, from your GPS.';
+      renderTopShops(); renderEntryList();
+      setTimeout(() => toggleDropdown('location'), 900);
+    },
+    err => { note.textContent = 'Could not get location (' + err.message + '). Try manual entry below.'; },
+    { enableHighAccuracy: true }
+  );
+});
+document.getElementById('manualLocationForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const val = document.getElementById('manualLocationInput').value.trim();
+  if (!val) return;
+  userCoords = null;
+  document.getElementById('locationLabel').textContent = val;
+  document.getElementById('locationNote').textContent = 'Label set to "' + val + '". Use GPS for real distance.';
+  renderTopShops(); renderEntryList();
+  setTimeout(() => toggleDropdown('location'), 900);
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => { window.location.href = 'index.html'; });
+
+/* ---------- View switching ---------- */
+function showView(name) {
+  currentView = name;
+  ['home','hiring','applied'].forEach(v => document.getElementById('view-' + v).classList.toggle('hidden', v !== name));
+  if (name === 'hiring') renderHiringList();
+  if (name === 'applied') renderAppliedList();
+}
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const nav = btn.dataset.nav;
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (nav === 'home') { showView('home'); window.scrollTo({top:0,behavior:'smooth'}); }
+    else if (nav === 'hiring') showView('hiring');
+    else if (nav === 'applied') showView('applied');
+    else if (nav === 'search') { showView('home'); document.getElementById('searchInput').focus(); }
+    else if (nav === 'profile') { window.location.href = 'profile.html?role=worker'; }
+    else { showToast('This section is coming soon.'); }
+  });
+});
+
+/* ---------- Load saved profile into top icon + dropdown (if profile.html was completed) ---------- */
+function applySavedProfile() {
+  const saved = savedWorkerProfile;
+  if (!saved || saved.role !== 'worker') return; // keep placeholder defaults if nothing saved yet
+  if (saved.photo) {
+    document.getElementById('topAvatarImg').src = saved.photo;
+    document.querySelector('#profileDropdown .profile-head img').src = saved.photo;
+  }
+  if (saved.name) {
+    document.querySelector('#profileDropdown .profile-head-name').textContent = saved.name;
+  }
+}
+applySavedProfile();
+
+/* ---------- Boot ---------- */
+renderTopShops();
+renderCategories();
+renderEntryList();
+
+</script>
+</body>
+</html>

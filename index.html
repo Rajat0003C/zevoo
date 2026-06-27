@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WorkedWith — Find shops. Find workers.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper: #F4F1EC;
+  --surface: #FFFFFF;
+  --ink: #22262A;
+  --ink-soft: #6E7378;
+  --primary: #2F4858;
+  --primary-dark: #1C2E38;
+  --primary-light: #4F6E7D;
+  --accent: #B98655;
+  --accent-dark: #8C6239;
+  --accent-soft: #F0E6D8;
+  --line: #E7E3DC;
+  --good: #2E7D4F;
+  --radius: 14px;
+  --shadow: 0 2px 4px rgba(20,20,20,0.05), 0 8px 20px rgba(20,20,20,0.07);
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{
+  background:#E9E5DD;
+  font-family:'Inter', system-ui, sans-serif;
+  color: var(--ink);
+  display:flex; justify-content:center;
+}
+
+.phone-frame{
+  width:100%; max-width:430px;
+  background: var(--paper);
+  min-height:100vh;
+  position:relative;
+  padding-bottom:78px;
+}
+
+h1,h2,h3{ font-family:'Lora', serif; margin:0; }
+.hidden{ display:none !important; }
+
+/* ===== TOP BOX — location + icons + search, all in one colored card ===== */
+.top-box{
+  background: linear-gradient(150deg, var(--primary-dark), var(--primary));
+  padding:18px 18px 20px;
+  border-radius: 0 0 22px 22px;
+  color:#fff;
+}
+.top-box-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.location-pill{
+  display:flex; align-items:center; gap:7px;
+  background:none; border:none; padding:0; cursor:pointer;
+  font-family:'Inter', sans-serif; font-weight:700; font-size:0.92rem; color:#fff;
+  max-width:62%;
+}
+.location-pill svg{ color:#fff; opacity:0.9; flex-shrink:0; }
+.location-pill .chev{ opacity:0.7; margin-left:2px; flex-shrink:0; }
+#locationLabel{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+.top-box-icons{ display:flex; gap:14px; }
+.icon-btn{
+  position:relative; width:34px; height:34px; border-radius:50%;
+  border:none; background:rgba(255,255,255,0.14);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; cursor:pointer;
+}
+.icon-btn .dot{
+  position:absolute; top:5px; right:6px; width:7px; height:7px;
+  background: var(--accent); border-radius:50%; border:1.5px solid var(--primary);
+}
+.avatar-btn{ background:rgba(255,255,255,0.22); }
+
+.search-wrap{
+  display:flex; align-items:center; gap:9px;
+  padding:12px 14px;
+  background: var(--surface); border-radius:12px;
+  color: var(--ink-soft);
+}
+.search-wrap input{
+  border:none; outline:none; flex:1; font-family:'Inter', sans-serif;
+  font-size:0.92rem; color: var(--ink); background:transparent;
+}
+
+/* ===== DROPDOWNS ===== */
+.dropdown{
+  position:absolute; top:128px; right:18px; left:18px;
+  background: var(--surface); border:1px solid var(--line); border-radius:12px;
+  box-shadow: var(--shadow); padding:14px; z-index:40; color: var(--ink);
+}
+.dropdown-title{ font-weight:700; font-size:0.9rem; margin:0 0 8px; }
+.dropdown-note{ font-size:0.78rem; color: var(--ink-soft); margin:6px 0 0; }
+.dropdown-row{
+  width:100%; display:flex; align-items:center; gap:10px;
+  background:none; border:none; padding:10px 4px; font-size:0.88rem; font-weight:600;
+  color: var(--ink); cursor:pointer; text-align:left; border-radius:8px;
+}
+.dropdown-row:hover{ background: var(--paper); }
+.dropdown-divider{ height:1px; background: var(--line); margin:6px 0; }
+.manual-location-form{ display:flex; gap:8px; }
+.manual-location-form input{
+  flex:1; padding:9px 11px; border:1px solid var(--line); border-radius:8px; font-size:0.86rem; font-family:inherit;
+}
+.btn-mini-primary{
+  background: var(--primary); color:#fff; border:none; border-radius:8px;
+  padding:9px 14px; font-weight:700; font-size:0.84rem; cursor:pointer;
+}
+.btn-block{ width:100%; }
+
+/* ===== Guest banner ===== */
+.mix-note{
+  margin:0 18px 18px; font-size:0.8rem; color: var(--ink-soft); line-height:1.45;
+  background: var(--accent-soft); padding:11px 14px; border-radius:10px;
+}
+.mix-note strong{ color: var(--accent-dark); }
+
+/* ===== SECTIONS ===== */
+.content{ padding-top:20px; }
+.section{ margin-top:24px; }
+.section-head{
+  display:flex; align-items:baseline; justify-content:space-between;
+  padding:0 18px; margin-bottom:12px;
+}
+.section-head h2{ font-size:1.1rem; font-weight:700; }
+.section-sub{ font-size:0.74rem; color: var(--ink-soft); font-family:'IBM Plex Mono', monospace; }
+
+/* ===== TOP RATED — ONE FULL-WIDTH CARD PER SCREEN, SNAP SCROLL ===== */
+.top-scroll{
+  display:flex; overflow-x:auto; scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+}
+.top-scroll::-webkit-scrollbar{ display:none; }
+.top-card{
+  flex:0 0 100%; width:100%; scroll-snap-align:start; scroll-snap-stop:always;
+  padding:0 18px;
+}
+.top-card-inner{
+  border-radius:18px; padding:20px; color:#fff; position:relative; overflow:hidden;
+  min-height:160px; display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.top-card-inner.g1{ background:linear-gradient(135deg, #1C2E38, #3C5564); }
+.top-card-inner.g2{ background:linear-gradient(135deg, #5C4632, #8C6239); }
+.top-card-inner.g3{ background:linear-gradient(135deg, #33392B, #5C6B4D); }
+.top-card-left{ flex:1; min-width:0; }
+.top-card-badge{
+  font-family:'IBM Plex Mono', monospace; font-size:0.66rem; font-weight:600;
+  background:rgba(255,255,255,0.18); padding:3px 8px; border-radius:20px; display:inline-block;
+}
+.top-card-rating{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; font-weight:600; float:right; }
+.top-card-name{ font-family:'Lora', serif; font-weight:700; font-size:1.15rem; margin:10px 0 4px; }
+.top-card-bio{ font-size:0.8rem; opacity:0.88; line-height:1.4; margin-bottom:12px; }
+.top-card-pay{ font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:1rem; }
+.top-card-pay small{ font-weight:500; font-size:0.68rem; opacity:0.8; display:block; }
+.top-card-photo{
+  width:88px; height:88px; border-radius:14px; flex-shrink:0; overflow:hidden;
+  border:2px solid rgba(255,255,255,0.3);
+}
+.top-card-photo.worker{ border-radius:50%; }
+.top-card-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.scroll-dots{ display:flex; justify-content:center; gap:6px; margin-top:12px; }
+.scroll-dots .sdot{
+  width:6px; height:6px; border-radius:50%; background: var(--line); transition: background .15s, width .15s;
+}
+.scroll-dots .sdot.active{ background: var(--primary); width:18px; border-radius:4px; }
+
+/* ===== CATEGORIES — real photo tiles ===== */
+.cat-scroll{ display:flex; gap:16px; overflow-x:auto; padding:0 18px 4px; }
+.cat-scroll::-webkit-scrollbar{ display:none; }
+.cat-tile{
+  flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:7px;
+  background:none; border:none; cursor:pointer; width:64px;
+}
+.cat-tile-icon{
+  width:58px; height:58px; border-radius:16px; overflow:hidden;
+  border:2px solid transparent; background: var(--line);
+}
+.cat-tile-icon img{ width:100%; height:100%; object-fit:cover; display:block; }
+.cat-tile.active .cat-tile-icon{ border-color: var(--primary); }
+.cat-tile-label{
+  font-size:0.74rem; font-weight:600; color: var(--ink-soft); text-align:center; white-space:nowrap;
+}
+.cat-tile.active .cat-tile-label{ color: var(--ink); }
+
+/* ===== MIXED ENTRY LIST: shops + workers ===== */
+.entry-list{ display:flex; flex-direction:column; gap:11px; padding:0 18px; }
+.entry-row{
+  display:flex; align-items:center; gap:12px;
+  background: var(--surface); border:1px solid var(--line); border-radius:12px;
+  padding:12px 14px;
+}
+.entry-avatar{
+  width:48px; height:48px; flex-shrink:0; overflow:hidden; background: var(--line);
+}
+.entry-avatar.shop{ border-radius:11px; }
+.entry-avatar.worker{ border-radius:50%; }
+.entry-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+.entry-main{ flex:1; min-width:0; }
+.entry-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.entry-name{ font-weight:700; font-size:0.94rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.entry-pay{ font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:0.86rem; color: var(--primary-dark); flex-shrink:0; }
+.entry-meta{ display:flex; gap:8px; align-items:center; font-size:0.74rem; color: var(--ink-soft); margin-top:3px; flex-wrap:wrap; }
+.entry-meta .rating{ color: var(--accent-dark); font-weight:600; }
+.tag-type{
+  font-family:'IBM Plex Mono', monospace; font-size:0.64rem; font-weight:700; padding:1px 7px; border-radius:20px;
+  text-transform:uppercase; letter-spacing:0.02em;
+}
+.tag-type.shop{ background:#E6F1F5; color: var(--primary-dark); }
+.tag-type.worker{ background: var(--accent-soft); color: var(--accent-dark); }
+.entry-action{
+  flex-shrink:0; background: var(--primary); color:#fff; border:none; border-radius:8px;
+  padding:7px 13px; font-size:0.78rem; font-weight:700; cursor:pointer;
+}
+.empty-note{ color: var(--ink-soft); font-size:0.86rem; padding:10px 0; }
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:430px;
+  display:flex; justify-content:space-around;
+  background: var(--surface); border-top:1px solid var(--line);
+  padding:9px 4px 11px;
+}
+.nav-item{
+  background:none; border:none; display:flex; flex-direction:column; align-items:center; gap:3px;
+  color: var(--ink-soft); font-size:0.66rem; font-weight:600; cursor:pointer; padding:4px 6px;
+}
+.nav-item.active{ color: var(--primary); }
+
+@media (min-width:431px){
+  body{ background:#E9E5DD; }
+  .phone-frame{ box-shadow:0 0 0 1px var(--line), var(--shadow); margin:24px 0; border-radius:24px; overflow:hidden; min-height:auto; }
+  .bottom-nav{ border-radius:0 0 24px 24px; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- ===== HEADER BOX: location + icons + search ===== -->
+  <header class="top-box">
+    <div class="top-box-row">
+      <button class="location-pill" id="locationPill">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-6.1-7-11.5C5 5.4 8.1 3 12 3s7 2.4 7 6.5C19 14.9 12 21 12 21z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9.5" r="2.4" stroke="currentColor" stroke-width="1.8"/></svg>
+        <span id="locationLabel">Set your location</span>
+        <svg class="chev" width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+      <div class="top-box-icons">
+        <button class="icon-btn" id="notifBtn" aria-label="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 1 0-12 0c0 4-2 5-2 6h16c0-1-2-2-2-6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="1.8"/></svg>
+        </button>
+        <button class="icon-btn avatar-btn" id="profileBtn" aria-label="Profile">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 20c1.4-3.6 4.4-5.5 7.5-5.5s6.1 1.9 7.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="text" id="searchInput" placeholder="Search shops or workers…" />
+    </div>
+  </header>
+
+  <!-- Location dropdown -->
+  <div class="dropdown hidden" id="locationDropdown">
+    <button class="dropdown-row" id="useGpsBtn">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Use my current location (GPS)
+    </button>
+    <div class="dropdown-divider"></div>
+    <form id="manualLocationForm" class="manual-location-form">
+      <input type="text" id="manualLocationInput" placeholder="Type your area or city" />
+      <button type="submit" class="btn-mini-primary">Set</button>
+    </form>
+    <p class="dropdown-note" id="locationNote"></p>
+  </div>
+
+  <main class="content">
+
+    <p class="mix-note">Browsing as a guest — showing shops and workers together. <strong>Log in</strong> to see a feed made just for you.</p>
+
+    <!-- ===== TOP — one full-width banner per screen ===== -->
+    <section class="section">
+      <div class="section-head">
+        <h2>Top rated nearby</h2>
+        <span class="section-sub" id="distanceHint">Set location for distance</span>
+      </div>
+      <div class="top-scroll" id="topScroll"><!-- injected --></div>
+      <div class="scroll-dots" id="scrollDots"><!-- injected --></div>
+    </section>
+
+    <!-- ===== CATEGORIES — real photo tiles ===== -->
+    <section class="section">
+      <div class="cat-scroll" id="catScroll"><!-- injected --></div>
+    </section>
+
+    <!-- ===== MIXED LIST: shops + workers ===== -->
+    <section class="section">
+      <div class="section-head">
+        <h2>Near you</h2>
+        <span class="section-sub" id="listCount"></span>
+      </div>
+      <div class="entry-list" id="entryList"><!-- injected --></div>
+    </section>
+
+  </main>
+
+  <!-- ===== BOTTOM NAV ===== -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-nav="home">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 4l8 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9h12v-9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="nav-item" data-nav="shops">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 9.5 5.5 4h13L20 9.5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M4.5 9.5h15V19a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1V9.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 20v-5h6v5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      <span>Shops</span>
+    </button>
+    <button class="nav-item" data-nav="search">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Search</span>
+    </button>
+    <button class="nav-item" data-nav="revenue">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 19V5M4 19h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7.5 16V11M12 16V8M16.5 16v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Revenue</span>
+    </button>
+    <button class="nav-item" data-nav="profile">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.8"/><path d="M4.8 19.5c1.3-3.4 4.2-5.2 7.2-5.2s5.9 1.8 7.2 5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Profile</span>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+/* ======================================================================
+   Sample data — in the real app, shop photos come from what the owner
+   uploads on their profile, and worker photos come from the worker's
+   own profile photo. These are stand-ins with the same data shape.
+   ====================================================================== */
+const photoFor = {
+  Grocery: "https://loremflickr.com/300/300/grocery,vegetables",
+  Chicken: "https://loremflickr.com/300/300/chicken,poultry",
+  Fish:    "https://loremflickr.com/300/300/fish,seafood",
+  Bakery:  "https://loremflickr.com/300/300/bakery,bread",
+  Sweets:  "https://loremflickr.com/300/300/sweets,dessert"
+};
+// Anonymous stock headshots standing in for worker profile photos.
+const facePhotos = [
+  "https://i.pravatar.cc/300?img=12",
+  "https://i.pravatar.cc/300?img=33",
+  "https://i.pravatar.cc/300?img=47",
+  "https://i.pravatar.cc/300?img=5",
+  "https://i.pravatar.cc/300?img=58"
+];
+
+// Base reference point used to scatter sample lat/lng around (Imphal, Manipur area).
+const BASE_LAT = 24.8170, BASE_LNG = 93.9368;
+function jitter(km) {
+  // rough conversion: 1 degree lat ~ 111km
+  return (Math.random() - 0.5) * (km / 111);
+}
+
+const entries = [
+  { type:"shop",   name:"Wolt Market",         category:"Grocery", bio:"Stock & billing, evening shift",      pay:500, payType:"day", rating:4.9, lat:BASE_LAT+jitter(2), lng:BASE_LNG+jitter(2), photo:photoFor.Grocery },
+  { type:"shop",   name:"Tara General Store",  category:"Grocery", bio:"Daily pay, evening shift",            pay:450, payType:"day", rating:4.8, lat:BASE_LAT+jitter(3), lng:BASE_LNG+jitter(3), photo:photoFor.Grocery },
+  { type:"shop",   name:"Fresh Chicken Point", category:"Chicken", bio:"Cleaning & counter help, urgent",     pay:520, payType:"day", rating:4.3, lat:BASE_LAT+jitter(4), lng:BASE_LNG+jitter(4), photo:photoFor.Chicken },
+  { type:"shop",   name:"Zing Restaurant",     category:"Chicken", bio:"Weekend cashier needed",              pay:700, payType:"day", rating:4.6, lat:BASE_LAT+jitter(2.5), lng:BASE_LNG+jitter(2.5), photo:photoFor.Chicken },
+  { type:"shop",   name:"Hilsa Fish Mart",     category:"Fish",    bio:"Early morning, good tips",            pay:550, payType:"day", rating:4.5, lat:BASE_LAT+jitter(5), lng:BASE_LNG+jitter(5), photo:photoFor.Fish },
+  { type:"shop",   name:"Golden Crust Bakery", category:"Bakery",  bio:"Baker's assistant, training given",   pay:480, payType:"day", rating:4.7, lat:BASE_LAT+jitter(3), lng:BASE_LNG+jitter(3), photo:photoFor.Bakery },
+  { type:"shop",   name:"Mishti Ghar",         category:"Sweets",  bio:"Festival rush, extra pay this week",  pay:600, payType:"day", rating:4.4, lat:BASE_LAT+jitter(6), lng:BASE_LNG+jitter(6), photo:photoFor.Sweets },
+
+  { type:"worker", name:"Rohan Das",     category:"Grocery", bio:"3 yrs experience, cashier & billing",  pay:550, payType:"day", rating:4.9, lat:BASE_LAT+jitter(1.5), lng:BASE_LNG+jitter(1.5), photo:facePhotos[0] },
+  { type:"worker", name:"Sunita Devi",   category:"Bakery",  bio:"Trained baker's assistant",            pay:480, payType:"day", rating:4.7, lat:BASE_LAT+jitter(2), lng:BASE_LNG+jitter(2), photo:facePhotos[1] },
+  { type:"worker", name:"Ibomcha Singh", category:"Fish",    bio:"Early riser, market experience",       pay:530, payType:"day", rating:4.6, lat:BASE_LAT+jitter(4), lng:BASE_LNG+jitter(4), photo:facePhotos[2] },
+  { type:"worker", name:"Priya Sharma",  category:"Sweets",  bio:"Festival season specialist",           pay:600, payType:"day", rating:4.5, lat:BASE_LAT+jitter(3.5), lng:BASE_LNG+jitter(3.5), photo:facePhotos[3] },
+  { type:"worker", name:"Deben Meitei",  category:"Chicken", bio:"Counter & cleaning, flexible hours",   pay:500, payType:"day", rating:4.4, lat:BASE_LAT+jitter(2.8), lng:BASE_LNG+jitter(2.8), photo:facePhotos[4] }
+];
+
+const categories = [
+  { key:"all",     label:"All",     img:"https://loremflickr.com/120/120/shop,storefront" },
+  { key:"Grocery", label:"Grocery", img:photoFor.Grocery },
+  { key:"Chicken", label:"Chicken", img:photoFor.Chicken },
+  { key:"Fish",    label:"Fish",    img:photoFor.Fish },
+  { key:"Bakery",  label:"Bakery",  img:photoFor.Bakery },
+  { key:"Sweets",  label:"Sweets",  img:photoFor.Sweets }
+];
+
+let activeCategory = "all";
+let searchTerm = "";
+let userCoords = null; // { lat, lng } — only set once GPS succeeds
+
+/* ---------- Real distance calc (Haversine formula) ---------- */
+function distanceKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function getDistanceLabel(entry) {
+  if (!userCoords) return null;
+  const d = distanceKm(userCoords.lat, userCoords.lng, entry.lat, entry.lng);
+  return d < 1 ? Math.round(d * 1000) + "m away" : d.toFixed(1) + "km away";
+}
+function sortedByRelevance(list) {
+  if (userCoords) {
+    return [...list].sort((a, b) =>
+      distanceKm(userCoords.lat, userCoords.lng, a.lat, a.lng) -
+      distanceKm(userCoords.lat, userCoords.lng, b.lat, b.lng)
+    );
+  }
+  return [...list].sort((a, b) => (b.rating + b.pay/1000) - (a.rating + a.pay/1000));
+}
+
+/* ---------- Go to login (placeholder — full login page built next) ---------- */
+function goToLogin() { window.location.href = "login.html"; }
+
+/* ---------- Render: top — one full-width banner per screen ---------- */
+function renderTopShops() {
+  const top = sortedByRelevance(entries).slice(0, 6);
+  const gradients = ['g1', 'g2', 'g3'];
+  const wrap = document.getElementById('topScroll');
+  wrap.innerHTML = top.map((e, i) => {
+    const distLabel = getDistanceLabel(e);
+    return `
+    <div class="top-card">
+      <div class="top-card-inner ${gradients[i % gradients.length]}">
+        <div class="top-card-left">
+          <span class="top-card-badge">${e.type === 'shop' ? e.category.toUpperCase() : 'WORKER · ' + e.category.toUpperCase()}</span>
+          <span class="top-card-rating">★ ${e.rating}</span>
+          <div class="top-card-name">${e.name}</div>
+          <div class="top-card-bio">${e.bio}${distLabel ? ' · ' + distLabel : ''}</div>
+          <div class="top-card-pay">₹${e.pay}<small>${e.type === 'shop' ? 'pay per ' + e.payType : 'asking per ' + e.payType}</small></div>
+        </div>
+        <div class="top-card-photo ${e.type === 'worker' ? 'worker' : ''}">
+          <img src="${e.photo}" alt="${e.name}" loading="lazy" />
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('distanceHint').textContent = userCoords ? 'Sorted by distance' : 'Set location for distance';
+  renderScrollDots(top.length);
+  wireScrollSync();
+}
+
+function renderScrollDots(count) {
+  const dots = document.getElementById('scrollDots');
+  dots.innerHTML = Array.from({ length: count }).map((_, i) =>
+    `<span class="sdot ${i === 0 ? 'active' : ''}"></span>`
+  ).join('');
+}
+function wireScrollSync() {
+  const wrap = document.getElementById('topScroll');
+  const dotEls = () => document.querySelectorAll('#scrollDots .sdot');
+  wrap.onscroll = () => {
+    const index = Math.round(wrap.scrollLeft / wrap.clientWidth);
+    dotEls().forEach((d, i) => d.classList.toggle('active', i === index));
+  };
+}
+
+/* ---------- Render: category photo tiles ---------- */
+function renderCategories() {
+  const wrap = document.getElementById('catScroll');
+  wrap.innerHTML = categories.map(c => `
+    <button class="cat-tile ${c.key === activeCategory ? 'active' : ''}" data-cat="${c.key}">
+      <span class="cat-tile-icon"><img src="${c.img}" alt="${c.label}" loading="lazy" /></span>
+      <span class="cat-tile-label">${c.label}</span>
+    </button>
+  `).join('');
+  wrap.querySelectorAll('.cat-tile').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeCategory = btn.dataset.cat;
+      renderCategories();
+      renderEntryList();
+    });
+  });
+}
+
+/* ---------- Render: mixed shop + worker list ---------- */
+function renderEntryList() {
+  let filtered = entries.filter(e =>
+    (activeCategory === 'all' || e.category === activeCategory) &&
+    (e.name.toLowerCase().includes(searchTerm) || e.category.toLowerCase().includes(searchTerm) || e.bio.toLowerCase().includes(searchTerm))
+  );
+  filtered = sortedByRelevance(filtered);
+
+  const list = document.getElementById('entryList');
+  document.getElementById('listCount').textContent = filtered.length + ' result' + (filtered.length === 1 ? '' : 's');
+
+  if (!filtered.length) {
+    list.innerHTML = '<p class="empty-note">No shops or workers match that search yet.</p>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(e => {
+    const distLabel = getDistanceLabel(e);
+    return `
+    <div class="entry-row">
+      <div class="entry-avatar ${e.type}"><img src="${e.photo}" alt="${e.name}" loading="lazy" /></div>
+      <div class="entry-main">
+        <div class="entry-top">
+          <span class="entry-name">${e.name}</span>
+          <span class="entry-pay">₹${e.pay}/${e.payType}</span>
+        </div>
+        <div class="entry-meta">
+          <span class="tag-type ${e.type}">${e.type}</span>
+          <span class="rating">★ ${e.rating}</span>
+          ${distLabel ? `<span>${distLabel}</span>` : `<span>Set location for distance</span>`}
+        </div>
+      </div>
+      <button class="entry-action" data-action="view">View</button>
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('.entry-action').forEach(btn => btn.addEventListener('click', goToLogin));
+}
+
+/* ---------- Search ---------- */
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  searchTerm = e.target.value.trim().toLowerCase();
+  renderEntryList();
+});
+
+/* ---------- Location dropdown (the only dropdown — notif/profile redirect straight to login) ---------- */
+const locationDropdown = document.getElementById('locationDropdown');
+document.getElementById('locationPill').addEventListener('click', () => {
+  locationDropdown.classList.toggle('hidden');
+});
+document.addEventListener('click', (e) => {
+  const inside = e.target.closest('.dropdown, #locationPill');
+  if (!inside) locationDropdown.classList.add('hidden');
+});
+
+/* ---------- Notification & profile icons — both require login (no fake content shown) ---------- */
+document.getElementById('notifBtn').addEventListener('click', goToLogin);
+document.getElementById('profileBtn').addEventListener('click', goToLogin);
+
+/* ---------- Location: REAL GPS distance, or manual label only ---------- */
+document.getElementById('useGpsBtn').addEventListener('click', () => {
+  const note = document.getElementById('locationNote');
+  if (!navigator.geolocation) { note.textContent = 'GPS not supported on this browser.'; return; }
+  note.textContent = 'Getting your location…';
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      document.getElementById('locationLabel').textContent = `Your location (±${Math.round(pos.coords.accuracy)}m)`;
+      note.textContent = 'Location set — distances below are real, calculated from your GPS position.';
+      renderTopShops();
+      renderEntryList();
+      setTimeout(() => locationDropdown.classList.add('hidden'), 900);
+    },
+    (err) => {
+      note.textContent = 'Could not get your location (' + err.message + '). Check browser permissions, or set it manually below.';
+    },
+    { enableHighAccuracy: true }
+  );
+});
+document.getElementById('manualLocationForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const val = document.getElementById('manualLocationInput').value.trim();
+  if (!val) return;
+  // Manual text entry sets a label only — we don't have real coordinates for it,
+  // so distance figures stay based on GPS only (honest limitation, not faked).
+  userCoords = null;
+  document.getElementById('locationLabel').textContent = val;
+  document.getElementById('locationNote').textContent = 'Location label set to "' + val + '". For real distances, use GPS instead.';
+  renderTopShops();
+  renderEntryList();
+  setTimeout(() => locationDropdown.classList.add('hidden'), 900);
+});
+
+/* ---------- Bottom nav: Home & Search work without login, rest require login ---------- */
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const nav = btn.dataset.nav;
+    if (nav === 'home') {
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (nav === 'search') {
+      document.getElementById('searchInput').focus();
+    } else {
+      goToLogin();
+    }
+  });
+});
+
+/* ---------- Boot ---------- */
+renderTopShops();
+renderCategories();
+renderEntryList();
+
+</script>
+</body>
+</html>

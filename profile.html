@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WorkedWith — Set up your profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper: #F4F1EA;
+  --surface: #FFFFFF;
+  --ink: #1F2328;
+  --ink-soft: #6E747A;
+  --primary: #1C3D4A;
+  --primary-dark: #112832;
+  --primary-light: #3A6273;
+  --accent: #A8763E;
+  --accent-dark: #8C6239;
+  --accent-soft: #F0E6D8;
+  --line: #E2DDD2;
+  --good: #2E7D4F;
+  --bad: #B23A2A;
+  --radius: 14px;
+  --shadow: 0 2px 4px rgba(20,20,20,0.04), 0 8px 20px rgba(20,20,20,0.07);
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{ background:#E7E2D7; font-family:'Inter',system-ui,sans-serif; color:var(--ink); display:flex; justify-content:center; }
+h1,h2,h3{ font-family:'Lora',serif; margin:0; }
+.hidden{ display:none !important; }
+
+.phone-frame{ width:100%; max-width:460px; background:var(--paper); min-height:100vh; padding-bottom:40px; }
+@media (min-width:461px){ .phone-frame{ box-shadow:0 0 0 1px var(--line), var(--shadow); margin:24px 0; border-radius:24px; overflow:hidden; min-height:auto; } }
+
+.ph-header{ background:linear-gradient(135deg, var(--primary-dark), var(--primary-light)); color:#fff; padding:26px 22px 22px; }
+.ph-header h1{ font-size:1.35rem; color:#fff; margin-bottom:4px; }
+.ph-header p{ font-size:0.84rem; opacity:0.85; margin:0; }
+
+form{ padding:22px; }
+.field-section{ margin-bottom:26px; }
+.field-section-title{ font-size:0.78rem; font-weight:700; color:var(--accent-dark); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:12px; font-family:'IBM Plex Mono',monospace; }
+label{ font-size:0.84rem; font-weight:600; color:var(--ink-soft); display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+input[type=text], input[type=tel], input[type=email], input[type=number], select, textarea{
+  font-family:'Inter',sans-serif; font-size:0.95rem; color:var(--ink); padding:11px 13px;
+  border:1px solid var(--line); border-radius:9px; background:#fff; outline:none; width:100%;
+}
+input:focus, select:focus, textarea:focus{ border-color:var(--primary); box-shadow:0 0 0 3px rgba(28,61,74,0.1); }
+.grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.optional-tag{ font-weight:400; text-transform:none; color:var(--ink-soft); font-size:0.74rem; }
+
+/* ---- photo uploaders ---- */
+.photo-upload-row{ display:flex; align-items:center; gap:16px; margin-bottom:18px; }
+.photo-circle{
+  width:84px; height:84px; border-radius:50%; flex-shrink:0;
+  cursor:pointer; position:relative;
+}
+.photo-clip{
+  width:100%; height:100%; border-radius:50%; background:var(--line); overflow:hidden;
+  display:flex; align-items:center; justify-content:center; border:2px dashed var(--accent);
+}
+.photo-rect{
+  width:120px; height:84px; border-radius:12px; flex-shrink:0; cursor:pointer; position:relative;
+}
+.photo-rect .photo-clip{ border-radius:12px; }
+.pen-badge{
+  position:absolute; bottom:-4px; right:-4px; width:26px; height:26px; border-radius:50%;
+  background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center;
+  font-size:0.72rem; border:2px solid var(--paper); z-index:2; pointer-events:none;
+}
+.photo-circle img, .photo-rect img{ width:100%; height:100%; object-fit:cover; display:none; }
+.photo-circle .ph-icon, .photo-rect .ph-icon{ font-size:1.5rem; color:var(--accent); }
+.photo-upload-text{ font-size:0.82rem; color:var(--ink-soft); }
+.photo-upload-text strong{ display:block; color:var(--ink); font-size:0.88rem; margin-bottom:2px; }
+input[type=file]{ display:none; }
+
+/* ---- location ---- */
+.location-row{ display:flex; gap:10px; align-items:center; margin-bottom:6px; }
+.btn-gps{ background:var(--accent-soft); color:var(--accent-dark); border:none; border-radius:9px; padding:11px 14px; font-weight:700; font-size:0.84rem; cursor:pointer; white-space:nowrap; }
+.gps-note{ font-size:0.76rem; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; margin:6px 0 14px; }
+.gps-note.ok{ color:var(--good); }
+
+/* ---- aadhaar / file upload generic ---- */
+.file-drop{
+  border:1.5px dashed var(--line); border-radius:10px; padding:16px; text-align:center; cursor:pointer;
+  font-size:0.86rem; color:var(--ink-soft); background:#fff;
+}
+.file-drop.has-file{ border-color:var(--good); color:var(--good); font-weight:600; }
+
+/* ---- bank account (collapsible) ---- */
+.collapse-toggle{
+  display:flex; align-items:center; justify-content:space-between; cursor:pointer;
+  background:#fff; border:1px solid var(--line); border-radius:9px; padding:13px 14px; font-weight:700; font-size:0.88rem;
+}
+.collapse-body{ padding-top:14px; }
+.collapse-body.hidden{ display:none; }
+.chev-icon{ transition:transform .15s; }
+.collapse-toggle.open .chev-icon{ transform:rotate(180deg); }
+
+/* ---- terms ---- */
+.terms-row{ display:flex; align-items:flex-start; gap:10px; margin:8px 0 22px; }
+.terms-row input{ width:auto; margin-top:3px; accent-color:var(--primary); }
+.terms-row label{ margin:0; font-size:0.84rem; color:var(--ink); font-weight:500; flex-direction:row; flex-wrap:wrap; }
+.terms-link{ color:var(--primary); font-weight:700; text-decoration:underline; cursor:pointer; }
+.form-error{ color:var(--bad); font-size:0.82rem; margin:-8px 0 14px; min-height:1em; }
+
+.btn-submit{
+  width:100%; background:var(--primary); color:#fff; border:none; border-radius:10px;
+  padding:14px; font-weight:700; font-size:0.98rem; cursor:pointer;
+}
+.btn-submit:hover{ background:var(--primary-dark); }
+
+/* ---- terms sheet ---- */
+.sheet-backdrop{ position:fixed; inset:0; background:rgba(20,20,20,0.5); z-index:500; display:flex; align-items:flex-end; justify-content:center; }
+.sheet-backdrop.hidden{ display:none; }
+.sheet{ background:var(--surface); width:100%; max-width:460px; max-height:82vh; overflow-y:auto; border-radius:18px 18px 0 0; padding:20px 20px 28px; position:relative; }
+.sheet-close{ position:absolute; top:14px; right:14px; width:30px; height:30px; border-radius:50%; background:var(--line); border:none; cursor:pointer; }
+.sheet h2{ font-size:1.1rem; margin-bottom:12px; padding-right:30px; }
+.sheet p{ font-size:0.86rem; color:var(--ink-soft); line-height:1.6; margin:0 0 12px; }
+.sheet h4{ font-family:'Inter',sans-serif; font-size:0.85rem; margin:14px 0 4px; color:var(--ink); }
+
+.toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(8px); background:var(--good); color:#fff; padding:12px 22px; border-radius:30px; font-size:0.86rem; font-weight:700; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:600; text-align:center; max-width:88%; }
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.error{ background:var(--bad); }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <div class="ph-header">
+    <h1 id="headerTitle">Set up your worker profile</h1>
+    <p id="headerSub">This becomes the profile shops see when you apply.</p>
+  </div>
+
+  <form id="profileForm">
+
+    <!-- 2. Profile photo (both) -->
+    <div class="field-section">
+      <div class="field-section-title">Your profile photo</div>
+      <div class="photo-upload-row">
+        <div class="photo-circle" id="profilePhotoBox">
+          <div class="photo-clip">
+            <span class="ph-icon">📷</span>
+            <img id="profilePhotoPreview" alt="Profile preview" />
+          </div>
+          <span class="pen-badge">✏️</span>
+        </div>
+        <div class="photo-upload-text"><strong>Tap to upload</strong>This is the face people will see on your profile. Tap again anytime to replace it.</div>
+        <input type="file" id="profilePhotoInput" accept="image/*" />
+      </div>
+    </div>
+
+    <!-- 3. Shop photo (owner only) -->
+    <div class="field-section owner-only">
+      <div class="field-section-title">Your shop's photo</div>
+      <div class="photo-upload-row">
+        <div class="photo-rect" id="shopPhotoBox">
+          <div class="photo-clip">
+            <span class="ph-icon">🏬</span>
+            <img id="shopPhotoPreview" alt="Shop preview" />
+          </div>
+          <span class="pen-badge">✏️</span>
+        </div>
+        <div class="photo-upload-text"><strong>Tap to upload</strong>Workers will see this photo on your shop listing. Replaceable anytime.</div>
+        <input type="file" id="shopPhotoInput" accept="image/*" />
+      </div>
+    </div>
+
+    <!-- 4. Name (both) -->
+    <div class="field-section">
+      <div class="field-section-title">Name</div>
+      <label>Full name
+        <input type="text" id="fieldName" required placeholder="Your full name" />
+      </label>
+    </div>
+
+    <!-- 5. Worker: age & gender / Owner: business type & age -->
+    <div class="field-section worker-only">
+      <div class="field-section-title">About you</div>
+      <div class="grid-2">
+        <label>Age
+          <input type="number" id="fieldAge" min="14" max="80" placeholder="e.g. 24" />
+        </label>
+        <label>Gender
+          <select id="fieldGender">
+            <option value="">Select</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <div class="field-section owner-only">
+      <div class="field-section-title">About your business</div>
+      <div class="grid-2">
+        <label>Type of business
+          <select id="fieldBusinessType">
+            <option value="">Select</option>
+            <option>Grocery</option>
+            <option>Chicken</option>
+            <option>Fish</option>
+            <option>Bakery</option>
+            <option>Sweets</option>
+            <option>Restaurant</option>
+            <option>Salon</option>
+            <option>Other</option>
+          </select>
+        </label>
+        <label>Age of business (years)
+          <input type="number" id="fieldBusinessAge" min="0" placeholder="e.g. 5" />
+        </label>
+      </div>
+    </div>
+
+    <!-- 6 & 7. Address + Pin (both) -->
+    <div class="field-section">
+      <div class="field-section-title">Location</div>
+      <label>Address
+        <textarea id="fieldAddress" rows="2" placeholder="House/shop no., street, area"></textarea>
+      </label>
+      <div class="location-row">
+        <button type="button" class="btn-gps" id="gpsBtn">📍 Auto-find via GPS</button>
+        <span class="gps-note" id="gpsNote">Optional — or type your address manually</span>
+      </div>
+      <label>PIN code <span class="optional-tag">(used to match you with nearby shops/workers)</span>
+        <input type="text" id="fieldPin" inputmode="numeric" maxlength="6" placeholder="6-digit PIN code" />
+      </label>
+    </div>
+
+    <!-- 8. Phone, Email, Aadhaar (both) -->
+    <div class="field-section">
+      <div class="field-section-title">Contact &amp; verification</div>
+      <label>Phone number
+        <input type="tel" id="fieldPhone" required placeholder="10-digit mobile number" />
+      </label>
+      <label>Email <span class="optional-tag">(optional)</span>
+        <input type="email" id="fieldEmail" placeholder="you@example.com" />
+      </label>
+      <label>Upload Aadhaar <span class="optional-tag">(optional — kept private, used for identity verification)</span></label>
+      <div class="file-drop" id="aadhaarDrop">📄 Tap to upload Aadhaar (image or PDF) — optional</div>
+      <input type="file" id="aadhaarInput" accept="image/*,application/pdf" />
+    </div>
+
+    <!-- 9. Worker: parents' details -->
+    <div class="field-section worker-only">
+      <div class="field-section-title">Parent / guardian details <span class="optional-tag">(for safety verification)</span></div>
+      <label>Parent's name
+        <input type="text" id="fieldParentName" placeholder="Parent or guardian's name" />
+      </label>
+      <label>Parent's phone number
+        <input type="tel" id="fieldParentPhone" placeholder="10-digit mobile number" />
+      </label>
+    </div>
+
+    <!-- 10. Pay -->
+    <div class="field-section owner-only">
+      <div class="field-section-title">Pay</div>
+      <label>Maximum pay per month (₹)
+        <input type="number" id="fieldMaxPay" min="0" placeholder="e.g. 16000" />
+      </label>
+    </div>
+    <div class="field-section worker-only">
+      <div class="field-section-title">Pay</div>
+      <label>Demand of pay per month (₹)
+        <input type="number" id="fieldDemandPay" min="0" placeholder="e.g. 14000" />
+      </label>
+    </div>
+
+    <!-- Terms -->
+    <div class="terms-row">
+      <input type="checkbox" id="termsCheck" />
+      <label for="termsCheck">I agree to the <span class="terms-link" id="termsLink">Terms and Conditions</span></label>
+    </div>
+    <p class="form-error" id="formError"></p>
+
+    <button type="submit" class="btn-submit">Submit profile</button>
+  </form>
+
+</div>
+
+<!-- Terms sheet -->
+<div class="sheet-backdrop hidden" id="termsSheet">
+  <div class="sheet">
+    <button class="sheet-close" id="closeTerms">×</button>
+    <h2>Terms and Conditions</h2>
+    <p>By creating a profile on WorkedWith, you agree to the following:</p>
+    <h4>1. Accurate information</h4>
+    <p>You confirm that the name, age, address, phone number, and identity documents you provide are accurate and belong to you (or, for workers under 18, to your registered profile with parent/guardian consent).</p>
+    <h4>2. Identity verification</h4>
+    <p>Your Aadhaar upload is used only to verify your identity and is not shared publicly with other users. It may be reviewed by our team for safety and trust purposes.</p>
+    <h4>3. Location sharing</h4>
+    <p>If you choose to share your location, it will be used to match you with nearby shops or workers and is visible to the other party only when relevant (e.g., once you apply or hire).</p>
+    <h4>4. Payments</h4>
+    <p>Any pay amounts listed are demands or offers, not guarantees. Actual payment terms are agreed directly between the worker and the shop owner.</p>
+    <h4>5. Respectful conduct</h4>
+    <p>Harassment, discrimination, or fraudulent listings are not tolerated and may result in account removal.</p>
+    <h4>6. Changes</h4>
+    <p>You can edit or delete your profile information at any time from this page.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======================================================================
+   Profile creation/edit form. Saves to localStorage (key 'ww_myProfile')
+   so it can later be read by worker.html/owner.html — this is a frontend
+   simulation; a real version needs the backend we built earlier to
+   actually persist this server-side.
+   ====================================================================== */
+
+/* ---------- Role comes only from the URL (?role=worker / ?role=owner) ---------- */
+/* No in-page toggle — by the time someone reaches this page they're already
+   logged in as a worker or owner, so the role is already known. */
+const urlRole = new URLSearchParams(window.location.search).get('role');
+const currentRole = (urlRole === 'owner') ? 'owner' : 'worker';
+
+function applyRoleUI() {
+  document.querySelectorAll('.worker-only').forEach(el => el.classList.toggle('hidden', currentRole !== 'worker'));
+  document.querySelectorAll('.owner-only').forEach(el => el.classList.toggle('hidden', currentRole !== 'owner'));
+  document.getElementById('headerTitle').textContent = currentRole === 'worker' ? 'Set up your worker profile' : 'Set up your shop profile';
+  document.getElementById('headerSub').textContent = currentRole === 'worker'
+    ? 'This becomes the profile shops see when you apply.'
+    : 'This becomes the listing workers see when browsing shops.';
+}
+applyRoleUI();
+
+/* ---------- Photo previews (click circle/rect to upload, click again to replace) ----------
+   Stored as base64 data URLs (not blob: URLs) so they survive being saved to
+   localStorage and read back on worker.html/owner.html after redirect. ---------- */
+let profilePhotoDataUrl = null;
+let shopPhotoDataUrl = null;
+function wirePhotoUpload(boxId, inputId, previewId, onLoaded) {
+  const box = document.getElementById(boxId);
+  const input = document.getElementById(inputId);
+  const preview = document.getElementById(previewId);
+  box.addEventListener('click', () => input.click());
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      preview.src = reader.result;
+      preview.style.display = 'block';
+      box.querySelector('.ph-icon').style.display = 'none';
+      onLoaded(reader.result);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+wirePhotoUpload('profilePhotoBox', 'profilePhotoInput', 'profilePhotoPreview', url => profilePhotoDataUrl = url);
+wirePhotoUpload('shopPhotoBox', 'shopPhotoInput', 'shopPhotoPreview', url => shopPhotoDataUrl = url);
+
+/* ---------- Aadhaar upload ---------- */
+const aadhaarDrop = document.getElementById('aadhaarDrop');
+const aadhaarInput = document.getElementById('aadhaarInput');
+let aadhaarFileName = null;
+aadhaarDrop.addEventListener('click', () => aadhaarInput.click());
+aadhaarInput.addEventListener('change', () => {
+  const file = aadhaarInput.files[0];
+  if (!file) return;
+  aadhaarFileName = file.name;
+  aadhaarDrop.textContent = '✓ ' + file.name + ' — tap to replace (optional)';
+  aadhaarDrop.classList.add('has-file');
+});
+
+/* ---------- GPS address auto-find ---------- */
+let capturedCoords = null;
+document.getElementById('gpsBtn').addEventListener('click', () => {
+  const note = document.getElementById('gpsNote');
+  if (!navigator.geolocation) { note.textContent = 'GPS not supported on this browser.'; note.classList.remove('ok'); return; }
+  note.textContent = 'Getting your location…';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      capturedCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      note.textContent = `Location captured (±${Math.round(pos.coords.accuracy)}m). Add house/street details above if needed — exact address lookup needs a maps service we haven't wired up yet.`;
+      note.classList.add('ok');
+    },
+    err => { note.textContent = 'Could not get location (' + err.message + '). Type your address manually.'; note.classList.remove('ok'); },
+    { enableHighAccuracy: true }
+  );
+});
+
+/* ---------- Terms sheet ---------- */
+const termsSheet = document.getElementById('termsSheet');
+document.getElementById('termsLink').addEventListener('click', () => termsSheet.classList.remove('hidden'));
+document.getElementById('closeTerms').addEventListener('click', () => termsSheet.classList.add('hidden'));
+termsSheet.addEventListener('click', e => { if (e.target.id === 'termsSheet') termsSheet.classList.add('hidden'); });
+
+/* ---------- Toast ---------- */
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ---------- Publish to network ----------
+   Pushes this profile into the shared shop/worker list so worker.html or
+   owner.html on the OTHER side can actually see and browse it. This is the
+   localStorage stand-in for "uploading to the network" until the real
+   backend (built earlier) is wired up. ---------- */
+const BASE_LAT = 24.8170, BASE_LNG = 93.9368;
+function publishToNetwork(profile) {
+  const lat = profile.coords ? profile.coords.lat : BASE_LAT + (Math.random()-0.5)*0.03;
+  const lng = profile.coords ? profile.coords.lng : BASE_LNG + (Math.random()-0.5)*0.03;
+
+  if (profile.role === 'owner') {
+    let shops = [];
+    try { shops = JSON.parse(localStorage.getItem('ww_shops')) || []; } catch(e) { shops = []; }
+    const entry = {
+      name: profile.name,
+      category: profile.businessType || 'Other',
+      businessAge: profile.businessAge ? `${profile.businessAge} yrs running` : 'New on WorkedWith',
+      bio: profile.address || 'New shop on WorkedWith.',
+      maxPay: Number(profile.maxPay) || 0,
+      rating: 5,
+      followers: 0,
+      lat, lng,
+      photo: profile.shopPhoto || profile.photo
+    };
+    const idx = shops.findIndex(s => s.name === entry.name);
+    if (idx >= 0) shops[idx] = entry; else shops.push(entry);
+    try { localStorage.setItem('ww_shops', JSON.stringify(shops)); } catch(e) {}
+  } else {
+    let workers = [];
+    try { workers = JSON.parse(localStorage.getItem('ww_workers')) || []; } catch(e) { workers = []; }
+    const entry = {
+      name: profile.name,
+      category: 'General',
+      age: Number(profile.age) || null,
+      gender: profile.gender || '',
+      bio: profile.address || 'New worker on WorkedWith.',
+      demand: Number(profile.demandPay) || 0,
+      rating: 5,
+      followers: 0,
+      lat, lng,
+      photo: profile.photo
+    };
+    const idx = workers.findIndex(w => w.name === entry.name);
+    if (idx >= 0) workers[idx] = entry; else workers.push(entry);
+    try { localStorage.setItem('ww_workers', JSON.stringify(workers)); } catch(e) {}
+  }
+}
+
+/* ---------- Submit ---------- */
+document.getElementById('profileForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const errEl = document.getElementById('formError');
+  errEl.textContent = '';
+
+  const name = document.getElementById('fieldName').value.trim();
+  const phone = document.getElementById('fieldPhone').value.trim();
+  const terms = document.getElementById('termsCheck').checked;
+
+  if (!name) { errEl.textContent = 'Please enter your name.'; return; }
+  if (!phone || phone.length < 10) { errEl.textContent = 'Please enter a valid phone number.'; return; }
+  if (!terms) { errEl.textContent = 'Please agree to the Terms and Conditions to continue.'; return; }
+
+  const profile = {
+    role: currentRole,
+    name,
+    phone,
+    email: document.getElementById('fieldEmail').value.trim(),
+    address: document.getElementById('fieldAddress').value.trim(),
+    pin: document.getElementById('fieldPin').value.trim(),
+    coords: capturedCoords,
+    aadhaarUploaded: !!aadhaarFileName,
+    photo: profilePhotoDataUrl,
+    savedAt: new Date().toISOString()
+  };
+
+  if (currentRole === 'owner') {
+    profile.shopPhoto = shopPhotoDataUrl;
+  }
+
+  if (currentRole === 'worker') {
+    profile.age = document.getElementById('fieldAge').value;
+    profile.gender = document.getElementById('fieldGender').value;
+    profile.parentName = document.getElementById('fieldParentName').value.trim();
+    profile.parentPhone = document.getElementById('fieldParentPhone').value.trim();
+    profile.demandPay = document.getElementById('fieldDemandPay').value;
+  } else {
+    profile.businessType = document.getElementById('fieldBusinessType').value;
+    profile.businessAge = document.getElementById('fieldBusinessAge').value;
+    profile.maxPay = document.getElementById('fieldMaxPay').value;
+  }
+
+  try { localStorage.setItem('ww_myProfile', JSON.stringify(profile)); } catch(err) { /* ignore storage errors */ }
+  publishToNetwork(profile);
+
+  showToast('Profile saved! Redirecting…');
+  setTimeout(() => {
+    window.location.href = currentRole === 'worker' ? 'worker.html' : 'owner.html';
+  }, 1100);
+});
+
+/* ---------- Pre-fill the form if a profile was already saved for this role ----------
+   Placed at the end of the file deliberately — it touches variables (capturedCoords,
+   profilePhotoDataUrl, shopPhotoDataUrl, aadhaarDrop, aadhaarFileName) that are declared
+   further up the file, so this must run only after all of those declarations exist. ---------- */
+function loadExistingProfile() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem('ww_myProfile')); } catch(e) { saved = null; }
+  if (!saved || saved.role !== currentRole) return; // nothing saved yet for this role — leave form blank
+
+  document.getElementById('fieldName').value = saved.name || '';
+  document.getElementById('fieldPhone').value = saved.phone || '';
+  document.getElementById('fieldEmail').value = saved.email || '';
+  document.getElementById('fieldAddress').value = saved.address || '';
+  document.getElementById('fieldPin').value = saved.pin || '';
+
+  if (saved.coords) {
+    capturedCoords = saved.coords;
+    const note = document.getElementById('gpsNote');
+    note.textContent = 'Using your previously saved location. Tap "Auto-find via GPS" to update it.';
+    note.classList.add('ok');
+  }
+
+  if (saved.photo) {
+    profilePhotoDataUrl = saved.photo;
+    const preview = document.getElementById('profilePhotoPreview');
+    preview.src = saved.photo;
+    preview.style.display = 'block';
+    document.querySelector('#profilePhotoBox .ph-icon').style.display = 'none';
+  }
+  if (saved.shopPhoto) {
+    shopPhotoDataUrl = saved.shopPhoto;
+    const preview = document.getElementById('shopPhotoPreview');
+    preview.src = saved.shopPhoto;
+    preview.style.display = 'block';
+    document.querySelector('#shopPhotoBox .ph-icon').style.display = 'none';
+  }
+
+  if (saved.aadhaarUploaded) {
+    aadhaarFileName = 'previously-uploaded';
+    aadhaarDrop.textContent = '✓ Aadhaar already uploaded — tap to replace (optional)';
+    aadhaarDrop.classList.add('has-file');
+  }
+
+  if (currentRole === 'worker') {
+    document.getElementById('fieldAge').value = saved.age || '';
+    document.getElementById('fieldGender').value = saved.gender || '';
+    document.getElementById('fieldParentName').value = saved.parentName || '';
+    document.getElementById('fieldParentPhone').value = saved.parentPhone || '';
+    document.getElementById('fieldDemandPay').value = saved.demandPay || '';
+  } else {
+    document.getElementById('fieldBusinessType').value = saved.businessType || '';
+    document.getElementById('fieldBusinessAge').value = saved.businessAge || '';
+    document.getElementById('fieldMaxPay').value = saved.maxPay || '';
+  }
+}
+loadExistingProfile();
+
+</script>
+</body>
+</html>
